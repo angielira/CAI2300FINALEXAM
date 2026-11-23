@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How it works · Salsa Shape Matcher</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ff4655'/%3E%3Cpath d='M22 46c6-10 14-14 22-28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='44' cy='16' r='5' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"><span></span><span></span><span></span></div>
+  <header class="topbar glass">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span><span>Salsa Shape Matcher</span></a>
+    <nav class="nav" style="display:flex"><a href="./">App</a><a href="resources.html">Resources</a></nav>
+  </header>
+
+  <main class="article glass">
+    <span class="tag">How it works</span>
+    <h1>The browser is the computer</h1>
+    <p class="lead">Everything happens inside this tab. Your photos are never uploaded. Netlify only sends the files; your own browser does the computer vision and keeps your library.</p>
+
+    <div class="flow" aria-label="Pipeline">
+      <span>📷 Your photo</span><i>→</i><span>Web Worker runs OpenCV.js on WebAssembly</span><i>→</i><span>Silhouette + score</span><i>→</i><span>Saved in IndexedDB</span>
+    </div>
+
+    <div class="trio">
+      <section class="card"><span class="tag">The eyes</span><h3>OpenCV.js</h3>
+        <p>OpenCV is the most widely used computer vision library. OpenCV.js is the same library packaged for the web: one file, and every function waits on an object called <code>cv</code>.</p></section>
+      <section class="card"><span class="tag">The muscle</span><h3>WebAssembly</h3>
+        <p>OpenCV is written in C++. It was compiled to WebAssembly, a compact binary format that runs at close to native speed inside the browser’s security sandbox. That is why the analysis takes only a fraction of a second.</p></section>
+      <section class="card"><span class="tag">The memory</span><h3>IndexedDB</h3>
+        <p>A real database built into your browser. It stores your reference shapes and every practice attempt (photos included) on your own computer, so they are still here after a refresh.</p></section>
+    </div>
+
+    <h2>What OpenCV.js does with your photo</h2>
+    <ol>
+      <li><strong>Grayscale and blur</strong> (<code>cvtColor</code>, <code>GaussianBlur</code>) so colour and noise don’t matter.</li>
+      <li><strong>Threshold</strong> (<code>threshold</code> with Otsu’s method) splits the picture into “dancer” and “wall”. Otsu picks the cut automatically; switch to Manual to choose it yourself.</li>
+      <li><strong>Clean up</strong> (<code>morphologyEx</code>) closes small gaps and removes specks.</li>
+      <li><strong>Find the outline</strong> (<code>findContours</code>). The largest outline is you, or the two of you in a dip. Optional <code>grabCut</code> refines the edges on busy walls.</li>
+      <li><strong>Measure</strong> (<code>boundingRect</code>, <code>convexHull</code>, <code>contourArea</code>): height ÷ width, and how “open” the shape is.</li>
+      <li><strong>Compare</strong> (<code>matchShapes</code>) with your reference. It uses Hu moments, seven numbers that describe a shape whatever its size or position. They become the match score, together with the proportions and openness.</li>
+    </ol>
+
+    <h2>Why it never freezes</h2>
+    <p>All of this runs in a <strong>Web Worker</strong>, a background thread. The page sends the photo, keeps responding, and gets the answer back. If a photo ever takes more than 30 seconds, the app restarts the worker for you.</p>
+    <p>WebAssembly has its own block of memory that JavaScript’s garbage collector does not clean. Every image inside OpenCV.js is a <code>cv.Mat</code>, and the app frees each one with <code>.delete()</code> as soon as it is done. The result panel shows “Mats still in memory: 0” to prove it.</p>
+
+    <h2>What it can and can’t see</h2>
+    <p><em>Edges are clues, not understanding.</em> OpenCV compares the outline of your whole silhouette. It does not find elbows, knees or hips; that needs deep-learning pose models, which are a different tool. For a couple, both dancers merge into one shape, which is useful for a dip because the shape of the dip is what you are practising. For the best results, use a plain wall, contrasting clothes, and keep the whole body in the frame.</p>
+
+    <h2>If the app gets stuck</h2>
+    <p>Use <strong>Reset app data</strong> at the bottom of the app. If the page itself is frozen: right-click → <strong>Inspect</strong> → <strong>Application</strong> → <strong>IndexedDB</strong> → <code>salsashapes</code> to look inside, or <strong>Storage → Clear site data</strong> to start fresh.</p>
+
+    <p><a href="./">← Back to the app</a> · <a href="resources.html">Resources</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resources · Salsa Shape Matcher</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ff4655'/%3E%3Cpath d='M22 46c6-10 14-14 22-28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='44' cy='16' r='5' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"><span></span><span></span><span></span></div>
+  <header class="topbar glass">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span><span>Salsa Shape Matcher</span></a>
+    <nav class="nav" style="display:flex"><a href="./">App</a><a href="how-it-works.html">How it works</a></nav>
+  </header>
+
+  <main class="article glass">
+    <span class="tag">Resources</span>
+    <h1>Every link this project relies on</h1>
+    <p class="lead">The official documentation the agent team researched, the code, and the course material.</p>
+
+    <h2>This project</h2>
+    <ul class="links-list">
+      <li><a href="https://github.com/angielira/CAI2300FINALEXAM">GitHub repository: angielira/CAI2300FINALEXAM</a><small>Source code, research (docs/), agents (.claude/agents), skills (.claude/skills) and knowledge folders.</small></li>
+      <li><a href="https://github.com/angielira/CAI2300FINALEXAM/blob/main/docs/handoff-log.md">Hand-off log</a><small>Which expert agent did what, and where they handed work to each other.</small></li>
+      <li><a href="https://github.com/fenago/CVFinal">Course guide: worked example (fenago/CVFinal)</a><small>The Smart Document Scanner example from the final exam guide.</small></li>
+      <li><a href="https://cvfinal-doc-scanner.netlify.app">Course guide: live worked example</a><small>The finished document scanner the guide builds.</small></li>
+    </ul>
+
+    <h2>OpenCV.js</h2>
+    <ul class="links-list">
+      <li><a href="https://docs.opencv.org/4.13.0/d5/d10/tutorial_js_root.html">OpenCV.js tutorials (4.13.0)</a><small>Loading OpenCV.js, cv.Mat, image processing, contours.</small></li>
+      <li><a href="https://docs.opencv.org/4.13.0/opencv.js">opencv.js (official build used by this app)</a><small>Loaded once by the Web Worker; WebAssembly is embedded in the file.</small></li>
+      <li><a href="https://docs.opencv.org/4.x/opencv.js">opencv.js (4.x fallback)</a><small>Used only if the 4.13.0 build cannot be loaded.</small></li>
+      <li><a href="https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html">Image thresholding and Otsu’s method</a><small>The idea behind the automatic threshold.</small></li>
+      <li><a href="https://docs.opencv.org/4.x/d3/dc0/group__imgproc__shape.html">Structural analysis and shape descriptors</a><small>findContours, contourArea, convexHull, moments, matchShapes.</small></li>
+    </ul>
+
+    <h2>WebAssembly and Web Workers</h2>
+    <ul class="links-list">
+      <li><a href="https://webassembly.org/">webassembly.org</a><small>What WebAssembly is and why it is fast and safe.</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/WebAssembly">MDN: WebAssembly</a><small>Concepts, the JavaScript API, memory.</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface/instantiateStreaming_static">MDN: WebAssembly.instantiateStreaming()</a><small>Why .wasm must be served as application/wasm.</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers">MDN: Using Web Workers</a><small>postMessage, transferable objects, importScripts, terminate.</small></li>
+    </ul>
+
+    <h2>IndexedDB and storage</h2>
+    <ul class="links-list">
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">MDN: IndexedDB API</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB">MDN: Using IndexedDB</a><small>Versions, onupgradeneeded, onblocked, transactions, indexes.</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria">MDN: Storage quotas and eviction</a><small>How much a site may store, and when the browser may delete it.</small></li>
+      <li><a href="https://developer.chrome.com/docs/devtools/storage/indexeddb">Chrome DevTools: view and change IndexedDB data</a><small>Inspect → Application → IndexedDB; Clear site data.</small></li>
+    </ul>
+
+    <h2>Deployment and design</h2>
+    <ul class="links-list">
+      <li><a href="https://docs.netlify.com/manage/routing/headers/">Netlify: custom headers</a><small>The headers in netlify.toml.</small></li>
+      <li><a href="https://docs.netlify.com/">Netlify documentation</a></li>
+      <li><a href="https://developer.apple.com/design/human-interface-guidelines/">Apple Human Interface Guidelines</a><small>The design language Wren and Sable followed.</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">MDN: Service Worker API</a><small>Offline support after the first visit.</small></li>
+    </ul>
+
+    <h2>Agent tooling</h2>
+    <ul class="links-list">
+      <li><a href="https://code.claude.com/docs/en/sub-agents">Claude Code: subagents</a></li>
+      <li><a href="https://code.claude.com/docs/en/skills">Claude Code: skills</a></li>
+    </ul>
+
+    <p><a href="./">← Back to the app</a></p>
+  </main>
+</body>
+</html>
