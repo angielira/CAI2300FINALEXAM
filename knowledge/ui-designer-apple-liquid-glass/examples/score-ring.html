@@ -1,0 +1,7 @@
+<!-- Worked example (Sable): the score ring, pure CSS with a conic gradient. -->
+<style>
+.ring{--p:0;width:92px;height:92px;border-radius:50%;display:grid;place-content:center;grid-auto-flow:column;align-items:baseline;
+ background:radial-gradient(closest-side,#fff 78%,transparent 80% 100%),conic-gradient(var(--ring,#ff4655) calc(var(--p)*1%),#0001 0);font:800 1.9rem -apple-system,sans-serif}
+.ring small{font-size:.9rem;color:#666}
+</style>
+<div class="ring" style="--p:93;--ring:#34c759">93<small>%</small></div>

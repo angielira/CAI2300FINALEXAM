@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>worker demo</title>
+<pre id="log"></pre>
+<script>
+// Worked example (Forge): the page side: request ids, a timeout per request, restart on timeout.
+const log = (s) => (document.getElementById('log').textContent += s + '\n');
+let worker, seq = 0; const pending = new Map();
+function start() {
+  worker = new Worker('worker.js');
+  worker.onmessage = ({ data }) => {
+    if (data.type === 'status') { log('worker ' + data.state); return; }
+    const p = pending.get(data.id); if (!p) return;
+    clearTimeout(p.timer); pending.delete(data.id);
+    data.type === 'result' ? p.resolve(data) : p.reject(new Error(data.message));
+  };
+  worker.onerror = (e) => { e.preventDefault(); log('worker crashed: ' + e.message); };
+}
+function run(task, n = 2e6, timeoutMs = 1500) {
+  const id = ++seq;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pending.delete(id); worker.terminate(); start();        // stuck: kill and restart
+      reject(new Error(`timed out after ${timeoutMs} ms; worker restarted`));
+    }, timeoutMs);
+    pending.set(id, { resolve, reject, timer });
+    worker.postMessage({ id, task, n });
+  });
+}
+(async () => {
+  start();
+  const results = [];
+  for (const task of ['work', 'fail', 'hang', 'work']) {
+    try { const r = await run(task); results.push(`${task}: ok (${r.ms.toFixed(1)} ms)`); }
+    catch (e) { results.push(`${task}: ${e.message}`); }
+  }
+  results.forEach(log);
+  document.title = results.length === 4 && results[3].startsWith('work: ok') ? 'PASS' : 'FAIL';
+})();
+</script>

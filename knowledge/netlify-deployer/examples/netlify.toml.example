@@ -1,0 +1,14 @@
+# Worked example (Harbor): minimal static-site config for an OpenCV.js app
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"

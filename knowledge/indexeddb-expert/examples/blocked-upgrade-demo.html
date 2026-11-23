@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>blocked upgrade demo</title>
+<pre id="log"></pre>
+<script>
+// Worked example (Ledger): what a blocked upgrade looks like, and how onversionchange fixes it.
+// Connection A (like an old tab) holds version 1 open. Connection B (like a new tab) asks for version 2.
+const log = (s) => (document.getElementById('log').textContent += s + '\n');
+const open = (v, onUp) => new Promise((res, rej) => { const r = indexedDB.open('blocked-demo', v);
+  r.onupgradeneeded = (e) => onUp && onUp(r.result, e); r.onblocked = () => log(`v${v}: BLOCKED by an open older connection`);
+  r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+(async () => {
+  await new Promise((r) => { const d = indexedDB.deleteDatabase('blocked-demo'); d.onsuccess = d.onerror = d.onblocked = r; });
+  const events = [];
+  // Round 1: the old connection does NOT listen for versionchange -> the upgrade is blocked.
+  const a = await open(1, (db) => db.createObjectStore('things', { keyPath: 'id' }));
+  const upgrade = open(2, (db) => { db.createObjectStore('more', { keyPath: 'id' }); events.push('upgraded to v2'); });
+  await new Promise((r) => setTimeout(r, 300));
+  log(`after 300 ms the upgrade finished? ${events.length > 0}`);
+  log('old connection closes (user closed the old tab)');
+  a.close();
+  const b = await upgrade; log(`v2 open: stores = ${[...b.objectStoreNames].join(', ')}`);
+  // Round 2: the open connection listens for versionchange and closes itself -> no block.
+  b.onversionchange = () => { b.close(); log('v2 connection got versionchange and closed itself'); };
+  const c = await open(3, () => events.push('upgraded to v3'));
+  log(`v3 open without waiting: ${events.includes('upgraded to v3')}`);
+  c.close();
+  document.title = events.join(',') === 'upgraded to v2,upgraded to v3' ? 'PASS' : 'FAIL';
+})();
+</script>

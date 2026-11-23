@@ -1,0 +1,6 @@
+# Worked example (Harbor): the same rules as a _headers file (alternative to netlify.toml)
+/*.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=31536000, immutable
+/sw.js
+  Cache-Control: no-cache

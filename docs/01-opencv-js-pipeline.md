@@ -37,7 +37,7 @@ Sources:
 |---|---|---|
 | dip-attempt vs dip-reference | 0.63 | 93 % |
 | styling-attempt vs styling-reference | 1.05 | 82 % |
-| dip vs styling (4 cross pairs) | 2.24 – 3.00 | 22 – 31 % |
+| dip vs styling (4 cross pairs) | 2.57 – 2.81 | 23 – 27 % |
 
 Score formula (same in Python and JS): `shape = 100 / (1 + (d / 1.5)^3)` (so a distance of 1.5 scores 50 %), blended 60 % shape + 25 % proportions (aspect ratio) + 15 % openness (solidity). Proportions are added because Hu moments ignore rotation, and in dance a tilted shape is a different shape.
 
