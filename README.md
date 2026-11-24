@@ -1,5 +1,7 @@
 # Ballet Pose Matcher
 
+**Live app: https://balletpose.netlify.app**
+
 Practise ballet positions (arabesque, attitude, à la seconde, retiré and 12 more) with computer vision that runs **entirely in your browser**. The app scores your pose against a reference and recognises which pose it is.
 Take or upload a photo against a plain wall. **OpenCV.js** finds your silhouette and compares it with your reference poses. **WebAssembly** makes it fast, inside a **Web Worker** so the page never freezes. **IndexedDB** keeps your reference poses and practice history on your own computer.
 
