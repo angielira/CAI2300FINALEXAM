@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>IndexedDB tests · Salsa Shape Matcher</title></head>
+<head><meta charset="utf-8"><title>IndexedDB tests · Ballet Pose Matcher</title></head>
 <body>
 <h1>IndexedDB tests</h1>
 <p>Open with <code>?phase=write</code>, then (after a browser restart or reload) <code>?phase=read</code>, then <code>?phase=reset</code>.
@@ -26,19 +26,19 @@ Results are written below and to <code>document.title</code>.</p>
       await DB.resetAll();
       const blob = await tinyJpeg('#f3d6dc');
       const points = new Int32Array([10, 10, 100, 10, 100, 80, 10, 80]);
-      await DB.saveReference({ id: 'ref-dip', name: 'Dip', createdAt: Date.now() - 2000, points, aspect: 0.8, solidity: 0.4, imageBlob: blob, thumbBlob: blob });
-      await DB.saveReference({ id: 'ref-styling', name: 'Shine styling', createdAt: Date.now() - 1000, points, aspect: 2.4, solidity: 0.3, imageBlob: blob, thumbBlob: blob });
+      await DB.saveReference({ id: 'ref-arabesque', name: 'Arabesque', createdAt: Date.now() - 2000, points, aspect: 0.8, solidity: 0.4, imageBlob: blob, thumbBlob: blob });
+      await DB.saveReference({ id: 'ref-seconde', name: 'À la seconde', createdAt: Date.now() - 1000, points, aspect: 2.4, solidity: 0.3, imageBlob: blob, thumbBlob: blob });
       for (const [i, score] of [61, 72, 84].entries()) {
-        await DB.saveAttempt({ id: 'att-' + i, createdAt: Date.now() + i, refId: 'ref-dip', refName: 'Dip', score,
+        await DB.saveAttempt({ id: 'att-' + i, createdAt: Date.now() + i, refId: 'ref-arabesque', refName: 'Arabesque', score,
           parts: { shape: score, proportions: 80, openness: 90 }, metrics: { aspect: 0.8 }, ms: 180, originalBlob: blob, resultBlob: blob, thumbBlob: blob });
       }
-      await DB.saveSettings({ cleanup: 4, threshold: null, thresholdValue: 120, grabcut: false, ghost: true, autosave: true, refId: 'ref-dip' });
+      await DB.saveSettings({ cleanup: 4, threshold: null, thresholdValue: 120, grabcut: false, ghost: true, autosave: true, refId: 'ref-arabesque' });
       const refs = await DB.listReferences();
       check('two references saved', refs.length === 2);
-      check('newest reference first', refs[0].id === 'ref-styling');
+      check('newest reference first', refs[0].id === 'ref-seconde');
       check('Int32Array survives structured clone', refs[0].points instanceof Int32Array && refs[0].points[2] === 100);
       check('three attempts saved', (await DB.listAttempts()).length === 3);
-      check('index byRef finds attempts', (await DB.attemptsFor('ref-dip')).length === 3);
+      check('index byRef finds attempts', (await DB.attemptsFor('ref-arabesque')).length === 3);
       const got = await DB.getAttempt('att-2');
       check('Blob stored and read back', got.thumbBlob instanceof Blob && got.thumbBlob.size > 100);
       const bmp = await createImageBitmap(got.thumbBlob);
@@ -53,7 +53,7 @@ Results are written below and to <code>document.title</code>.</p>
       check('references persisted after restart', refs.length === 2);
       check('attempts persisted after restart', (await DB.listAttempts()).length === 3);
       const s = await DB.getSettings();
-      check('settings persisted after restart', s && s.cleanup === 4 && s.refId === 'ref-dip');
+      check('settings persisted after restart', s && s.cleanup === 4 && s.refId === 'ref-arabesque');
     } else if (phase === 'reset') {
       await DB.resetAll();
       check('database deleted', (await indexedDB.databases()).every((d) => d.name !== DB.DB_NAME));

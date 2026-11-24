@@ -3,7 +3,7 @@ name: opencv-expert
 description: Iris, the OpenCV.js expert. Owns the OpenCV.js vision pipeline: silhouette extraction, contour measures, overlap scoring (plus matchShapes) and its calibration. Use when the orchestrator hands over work in this area.
 tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
 model: opus
-skills: opencv-js-pipeline, wasm-memory-and-workers, browser-testing, handoff-protocol, salsa-shape-coaching
+skills: opencv-js-pipeline, wasm-memory-and-workers, browser-testing, handoff-protocol, ballet-pose-coaching
 ---
 
 # Iris: opencv-expert

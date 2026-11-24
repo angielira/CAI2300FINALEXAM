@@ -5,7 +5,7 @@ description: Write README, How it works, Resources and notes in plain words with
 
 # plain-language-docs
 
-Shared by: `docs-writer`, `salsa-coach`, `ux-designer-apple-hig`
+Shared by: `docs-writer`, `ballet-coach`, `ux-designer-apple-hig`
 
 1. Short sentences; explain OpenCV.js = eyes, WebAssembly = muscle, IndexedDB = memory.
 2. Every external claim has a link; every link the project relies on is on `resources.html`.

@@ -4,8 +4,8 @@ import os, sys, textwrap
 REPO = sys.argv[1]
 
 SKILLS = {
-  "opencv-js-pipeline": ("Build, debug and calibrate the OpenCV.js silhouette pipeline (threshold, morphology, contours, GrabCut, matchShapes) for the Salsa Shape Matcher.",
-    ["opencv-expert", "wasm-expert", "qa-tester", "salsa-coach"],
+  "opencv-js-pipeline": ("Build, debug and calibrate the OpenCV.js silhouette pipeline (threshold, morphology, contours, GrabCut, matchShapes) for the Ballet Pose Matcher.",
+    ["opencv-expert", "wasm-expert", "qa-tester", "ballet-coach"],
     """1. Read `docs/01-opencv-js-pipeline.md` and `js/pipeline.js`.
 2. Keep the step order: matFromImageData → cvtColor(RGBA2GRAY) → GaussianBlur 5×5 → threshold (Otsu or manual) → border-polarity check → morphologyEx CLOSE then OPEN → findContours(RETR_EXTERNAL) → largest contour → optional grabCut(GC_INIT_WITH_MASK) → approxPolyDP(0.001·arcLength) → boundingRect / convexHull / contourArea → compare: aligned-silhouette overlap (scored; moments centroid, filled drawContours, dilate 9, and/or + countNonZero) and matchShapes(CONTOURS_MATCH_I2) (reported only).
 3. Any change to a parameter or the score formula must be made in **both** `js/pipeline.js` and `tests/pipeline_check.py`, then run `python3 tests/pipeline_check.py` (it must print `RESULT: PASS`: same-pose pairs ≥ 70 %, different poses ≤ 55 %).
@@ -54,19 +54,19 @@ SKILLS = {
 5. Report PASS/FAIL lines and any console errors verbatim."""),
   "handoff-protocol": ("How experts hand work to each other through the orchestrator, run in parallel, peer-review, and log every hand-off in docs/handoff-log.md.",
     ["orchestrator", "meta-agent", "opencv-expert", "wasm-expert", "indexeddb-expert", "ux-designer-apple-hig",
-     "ui-designer-apple-liquid-glass", "frontend-engineer", "qa-tester", "salsa-coach", "netlify-deployer", "docs-writer"],
+     "ui-designer-apple-liquid-glass", "frontend-engineer", "qa-tester", "ballet-coach", "netlify-deployer", "docs-writer"],
     """1. Experts never call each other directly; they return results to the orchestrator, which passes them on.
 2. The orchestrator launches every expert whose inputs are ready at the same time; it waits only on real dependencies.
 3. Every deliverable is reviewed by at least one other expert before it is accepted (e.g. Forge reviews Iris's pipeline for memory; Iris reviews Forge's worker for correctness).
 4. Each hand-off is one row in `docs/handoff-log.md`: #, from → to, what, why, outcome."""),
-  "salsa-shape-coaching": ("Salsa domain knowledge: which shapes to practise, photo guidance, and turning scores and measurements into kind, specific coach tips.",
-    ["salsa-coach", "opencv-expert", "ux-designer-apple-hig"],
-    """1. Built-in samples: four shine styling poses (high arm, hand on hip, arms framing, lean & sweep). Users may also save a dip, an ending pose, a cross-body finish or a hammerlock.
-2. Photo guidance: plain wall, contrasting clothes, whole body/couple in frame, same distance; use the self-timer.
-3. Score bands and tips are in `docs/06-salsa-shape-matching.md`; keep tips to one sentence, encouraging, concrete.
-4. Never claim the app judges timing, musicality or joints."""),
+  "ballet-pose-coaching": ("Ballet domain knowledge: which positions to practise, photo guidance, and turning scores and measurements into kind, specific coach tips.",
+    ["ballet-coach", "opencv-expert", "ux-designer-apple-hig"],
+    """1. Built-in samples: four classical poses (arabesque, à la seconde, retiré with arms in fifth, attitude derrière). Users may also save their own: développé, fifth position en haut, penché, a pose from a variation.
+2. Photo guidance: plain wall, contrasting leotard/tights, whole body in frame including pointed feet, side-on camera at hip height, same distance each time.
+3. Score bands and tips are in `docs/06-ballet-pose-matching.md`; keep tips to one sentence, encouraging, concrete, in ballet vocabulary.
+4. Never claim the app judges turnout, placement of the hips, épaulement, musicality or joints."""),
   "plain-language-docs": ("Write README, How it works, Resources and notes in plain words with every source linked.",
-    ["docs-writer", "salsa-coach", "ux-designer-apple-hig"],
+    ["docs-writer", "ballet-coach", "ux-designer-apple-hig"],
     """1. Short sentences; explain OpenCV.js = eyes, WebAssembly = muscle, IndexedDB = memory.
 2. Every external claim has a link; every link the project relies on is on `resources.html`.
 3. README has: what it is, run locally, deploy on Netlify, tests, team, troubleshooting."""),
@@ -107,7 +107,7 @@ AGENTS = [
    "Designs the flow and every state (loading OpenCV, working, done, error, blocked library, empty library) following Apple's Human Interface Guidelines.",
    "Gentle and user-obsessed. Asks 'what does the dancer see right now?' for every state, and cuts any step that isn't needed.",
    "Read, Write, Edit, Glob, Grep, WebFetch",
-   ["Define the three-step flow and all states.", "Write copy for errors and empty states with Rosa."], False),
+   ["Define the three-step flow and all states.", "Write copy for errors and empty states with Margot."], False),
   ("ui-designer-apple-liquid-glass", "Sable", "sonnet", "Visual design and CSS craft; strong everyday model.",
    "Styles the app Apple-style: liquid-glass materials, typography, colour, motion, dark mode and accessibility.",
    "Exacting and tasteful. Notices a 2-pixel misalignment, loves restraint, and always checks dark mode and contrast.",
@@ -123,11 +123,11 @@ AGENTS = [
    "Sceptical and thorough. Trusts nothing she hasn't run, reports PASS/FAIL lines verbatim, and screenshots every state.",
    "Read, Write, Edit, Glob, Grep, Bash",
    ["Own tests/ (pipeline_check.py, browser/cdp.mjs, db.test.html, flow.test.js).", "Block acceptance on any FAIL."], False),
-  ("salsa-coach", "Rosa", "sonnet", "Domain judgment and kind, specific language.",
-   "The salsa domain expert: chooses which shapes to support, writes photo guidance and coach tips, and sanity-checks that scores feel right to a dancer.",
-   "Warm, energetic, honest. Encourages like a good teacher but never pretends a 52 % is great.",
+  ("ballet-coach", "Margot", "sonnet", "Domain judgment and kind, specific language in ballet vocabulary.",
+   "The ballet domain expert: chooses which positions to support, writes photo guidance and coach tips, and sanity-checks that scores feel right to a dancer.",
+   "Poised, exacting and warm, like a good ballet mistress. Corrects with care, speaks in ballet terms, and never pretends a 52 % is a clean arabesque.",
    "Read, Write, Edit, Glob, Grep, WebFetch",
-   ["Write docs/06 and the coach text in js/app.js.", "Review the score bands against the sample photos."], False),
+   ["Write docs/06 and the coach text in js/app.js.", "Choose the sample poses and review the score bands against them."], False),
   ("netlify-deployer", "Harbor", "haiku", "Small, well-defined config work; fast and cheap.",
    "Owns netlify.toml, headers, MIME types, caching and the deploy checklist.",
    "Tidy and literal. Follows the checklist, double-checks headers, and never adds a build step that isn't needed.",
@@ -147,7 +147,7 @@ AGENTS = [
 
 TITLES = {"orchestrator": "orchestrator", "opencv-expert": "OpenCV.js expert", "wasm-expert": "WebAssembly expert",
   "indexeddb-expert": "IndexedDB expert", "ux-designer-apple-hig": "Apple-style UX designer", "ui-designer-apple-liquid-glass": "Apple-style UI designer",
-  "frontend-engineer": "front-end engineer", "qa-tester": "QA tester", "salsa-coach": "salsa coach and domain expert",
+  "frontend-engineer": "front-end engineer", "qa-tester": "QA tester", "ballet-coach": "ballet coach and domain expert",
   "netlify-deployer": "Netlify deployer", "docs-writer": "docs writer", "meta-agent": "meta agent"}
 
 def skills_for(agent):
@@ -210,9 +210,9 @@ for name, persona, model, why, job, *_rest in AGENTS:
     req = " (required)" if _rest[-1] else ""
     rows.append(f"| {persona} | `{name}`{req} | {job} |")
 skill_rows = "\n".join(f"| `{s}` | {d} | {', '.join(u if u != 'orchestrator' else 'orchestrator' for u in users)} |" for s, (d, users, _) in SKILLS.items())
-write("docs/expert-roster.md", f"""# Expert roster: Salsa Shape Matcher
+write("docs/expert-roster.md", f"""# Expert roster: Ballet Pose Matcher
 
-Decision: everything runs in the browser and is deployed on Netlify as a static site (no servers, no API keys). OpenCV.js does the computer vision, WebAssembly makes it fast and runs in a Web Worker, and IndexedDB keeps the shape library.
+Decision: everything runs in the browser and is deployed on Netlify as a static site (no servers, no API keys). OpenCV.js does the computer vision, WebAssembly makes it fast and runs in a Web Worker, and IndexedDB keeps the pose library.
 
 ## The team (12 agents)
 | Persona | Agent | One-line job |
@@ -220,7 +220,7 @@ Decision: everything runs in the browser and is deployed on Netlify as a static 
 {chr(10).join(rows)}
 
 ### Why there is no database administrator, backend developer or DevOps engineer
-IndexedDB lives inside each user's browser, so there is no server database to administer. Netlify only serves files, so there is no backend to write and no infrastructure to run. A browser-only app needs browser experts: vision (Iris), Wasm and workers (Forge), browser storage (Ledger), plus design, front end, testing, a domain coach, a tiny deploy role and docs.
+IndexedDB lives inside each user's browser, so there is no server database to administer. Netlify only serves files, so there is no backend to write and no infrastructure to run. A browser-only app needs browser experts: vision (Iris), Wasm and workers (Forge), browser storage (Ledger), plus design, front end, testing, a ballet coach, a tiny deploy role and docs.
 
 ## Skills, and which agents share them
 | Skill | What it covers | Shared by |
@@ -228,7 +228,7 @@ IndexedDB lives inside each user's browser, so there is no server database to ad
 {skill_rows}
 
 ## How they work together
-The user talks only to **Atlas**. Atlas runs independent experts in parallel (e.g. Iris on the pipeline, Ledger on the database, Wren on the flow, Rosa on salsa content), passes outputs on (Iris → Forge → Juno; Wren → Sable → Juno; Ledger → Juno), and has experts review each other (Forge reviews Iris for leaks, Iris reviews Forge's cv usage, Vera tests everything) before accepting. See `docs/handoff-log.md`.
+The user talks only to **Atlas**. Atlas runs independent experts in parallel (e.g. Iris on the pipeline, Ledger on the database, Wren on the flow, Margot on ballet content), passes outputs on (Iris → Forge → Juno; Wren → Sable → Juno; Ledger → Juno), and has experts review each other (Forge reviews Iris for leaks, Iris reviews Forge's cv usage, Vera tests everything) before accepting. See `docs/handoff-log.md`.
 """)
 
 # Brains

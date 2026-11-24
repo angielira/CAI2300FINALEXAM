@@ -15,7 +15,7 @@ Sources:
 - Errors bubble request → transaction → database; an unhandled error aborts the whole transaction.
 - Values are stored with the structured-clone algorithm: plain objects, `Blob`s, typed arrays (`Int32Array` contour points) all store directly (tested in `tests/browser/db.test.html`).
 
-## Our schema: database `salsashapes`, version 1
+## Our schema: database `balletposes`, version 1
 | Store | keyPath | Indexes | Holds |
 |---|---|---|---|
 | `references` | `id` | `byName`, `byCreated` | name, contour `points` (Int32Array), `aspect`, `solidity`, result image Blob, thumbnail Blob |
@@ -32,4 +32,4 @@ IDs are `crypto.randomUUID()`. Lists use `index('byCreated').getAll()` and rever
 - A refresh keeps data; it is **not a backup** (lecture slide 8). Clearing site data deletes it.
 
 ## Reset app data
-Close our connection, then `indexedDB.deleteDatabase('salsashapes')` (handle `onblocked`), delete Cache Storage, unregister the service worker, reload.
+Close our connection, then `indexedDB.deleteDatabase('balletposes')` (handle `onblocked`), delete Cache Storage, unregister the service worker, reload.

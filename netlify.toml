@@ -1,4 +1,4 @@
-# Salsa Shape Matcher: Netlify config. Owner: Harbor (netlify-deployer).
+# Ballet Pose Matcher: Netlify config. Owner: Harbor (netlify-deployer).
 # A static site: no build step, no functions, no API keys. Netlify only serves files;
 # the browser does all the computer vision (OpenCV.js / WebAssembly) and storage (IndexedDB).
 

@@ -1,6 +1,6 @@
 # 01 · OpenCV.js: the vision pipeline
 
-**Question:** which OpenCV.js functions does a Salsa Shape Matcher need, how do you load opencv.js, and how do you know it is ready?
+**Question:** which OpenCV.js functions does a Ballet Pose Matcher need, how do you load opencv.js, and how do you know it is ready?
 
 Sources:
 - OpenCV.js tutorials root (4.13.0): https://docs.opencv.org/4.13.0/d5/d10/tutorial_js_root.html
@@ -30,21 +30,37 @@ Sources:
 | Simplify | `cv.approxPolyDP(c, out, 0.001 * cv.arcLength(c, true), true)` | Fewer points to store; shape unchanged (tested). |
 | Measure | `cv.boundingRect`, `cv.convexHull(c, hull, false, true)`, `cv.contourArea` | Height ÷ width (aspect) and solidity = area ÷ hull area ("how open" the shape is). |
 | Compare (scored) | `cv.moments` (centroid), `cv.Mat.zeros`, `cv.drawContours(..., -1)` (fill), `cv.dilate`, `cv.bitwise_and`, `cv.bitwise_or`, `cv.countNonZero` | **Aligned-silhouette overlap**: both contours scaled to the same height, top edges and centroids aligned on a 160×160 canvas, filled, dilated 9 px (limb tolerance), then intersection ÷ union. Rotation-sensitive, which is right for dance. |
+| Recognise | same overlap score against every reference in the library, best first | "Looks most like: Arabesque · 75 %" (sure when best ≥ 60 % and ≥ 10 points ahead). |
 | Compare (reported) | `cv.matchShapes(a, b, cv.CONTOURS_MATCH_I2, 0)` | Distance between the two shapes' **Hu moments** (7 numbers invariant to position, scale and rotation). 0 = identical. |
 | Draw | `cv.drawContours(out, vec, i, color, thickness, cv.LINE_AA, hierarchy, 0)` | Outline + hull on the result. The page draws it with `ctx.putImageData` (in a worker, `cv.imshow` has no canvas to draw on). |
 
 ### Measured on the sample photos (tests/pipeline_check.py, OpenCV 5.0 Python)
-Four shine styling poses, each with a reference and an attempt (`samples/styling-<pose>-reference|attempt.jpg`).
+16 ballet poses, each with a reference and an attempt (`samples/ballet-<pose>-reference|attempt.jpg`). The test is **recognition**: each attempt must score highest against its own reference, at least 60 %, and beat the runner-up by at least 10 points.
 
-| Pair | Overlap | matchShapes (I2) | Score |
-|---|---|---|---|
-| frame-up attempt vs reference | 0.83 | 1.11 | 92 % |
-| high-arm attempt vs reference | 0.76 | 0.85 | 83 % |
-| hip-hand attempt vs reference | 0.76 | **8.05** | 84 % |
-| lean-sweep attempt vs reference | 0.71 | **6.93** | 75 % |
-| any two different poses (24 pairs) | 0.27 – 0.48 | 0.32 – 10.8 | ≤ 43 % |
+```
 
-**Why overlap, not Hu moments:** the first sample set (a dip and one styling pose, 2026-11-22) separated fine with `matchShapes`. With four thin-limbed styling poses it failed: Hu moments 5–7 are close to zero and flip sign between near-identical poses (hip-hand: 8.05 for the *same* pose, while two *different* poses scored 0.32). Even the first four Hu moments could not separate the poses, because thin arms barely change them. Aligned overlap separates them with a clear gap (same ≥ 0.71, different ≤ 0.48).
+pose                  own  overlap matchShapes   runner-up
+a-la-seconde          78%     0.72       1.148   attitude-devant     44%  PASS
+arabesque             75%     0.69       0.346   penche              38%  PASS
+attitude              86%     0.77       0.474   reverence           46%  PASS
+attitude-devant       77%     0.72       0.439   developpe-devant    45%  PASS
+developpe-devant      82%     0.74       7.630   tendu-seconde       41%  PASS
+ecarte                83%     0.76       0.229   attitude-devant     61%  PASS
+fifth-en-haut         92%     0.84       8.783   first-bras-bas      64%  PASS
+first-bras-bas        84%     0.77       0.297   fifth-en-haut       63%  PASS
+fourth-croise         76%     0.75       1.024   fifth-en-haut       39%  PASS
+grand-jete            66%     0.59       8.152   penche              18%  PASS
+penche                78%     0.75       0.391   a-la-seconde        38%  PASS
+retire                93%     0.86       1.073   fifth-en-haut       56%  PASS
+reverence             69%     0.68       0.794   ecarte              33%  PASS
+second-plie           80%     0.73       0.603   attitude            35%  PASS
+tendu-devant          78%     0.76       0.548   tendu-seconde       59%  PASS
+tendu-seconde         76%     0.69       8.916   tendu-devant        57%  PASS
+```
+
+All 16 PASS. Note the matchShapes column: 7.6–8.9 for the *same* pose (développé devant, fifth en haut, grand jeté, tendu à la seconde).
+
+**Why overlap, not Hu moments:** the first sample set (a salsa dip and one styling pose, 2026-11-22) separated fine with `matchShapes`. With thin-limbed poses (four salsa styling poses, then 16 ballet poses) it failed: Hu moments 5–7 are close to zero and flip sign between near-identical poses (hip-hand: 8.05 for the *same* pose, while two *different* poses scored 0.32). Even the first four Hu moments could not separate the poses, because thin arms barely change them. Aligned overlap separates them with a clear gap (same ≥ 0.71, different ≤ 0.48).
 
 Score formula (same in Python and JS): `outline = clamp((overlap − 0.35) / (0.90 − 0.35)) × 100`, blended 60 % outline + 25 % proportions (aspect ratio) + 15 % openness (solidity).
 

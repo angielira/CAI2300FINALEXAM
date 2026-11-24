@@ -1,4 +1,4 @@
-/* Salsa Shape Matcher: the OpenCV.js vision pipeline.
+/* Ballet Pose Matcher: the OpenCV.js vision pipeline.
  * Owner: Iris (opencv-expert). Reviewed by Forge (wasm-expert) for memory safety.
  *
  * Runs inside shape.worker.js (a Web Worker). Every cv.Mat / cv.MatVector that is
@@ -15,8 +15,8 @@ const NORM = 160;                   // normalised comparison canvas (same as tes
 const DILATE = 9;                   // tolerance for small limb differences (~6 % of body height)
 const OVERLAP_ZERO = 0.35;          // overlap that scores 0 %
 const OVERLAP_FULL = 0.90;          // overlap that scores 100 %
-const OVERLAY_RGBA = [255, 70, 85, 255];   // salsa red outline
-const HULL_RGBA = [255, 196, 0, 255];      // gold convex hull
+const OVERLAY_RGBA = [232, 87, 126, 255];  // ballet-rose outline
+const HULL_RGBA = [150, 120, 255, 255];    // lilac convex hull
 
 /** Leak counter, reported back to the page so QA can prove "0 Mats alive". */
 const memory = { allocated: 0, freed: 0 };
@@ -41,7 +41,7 @@ function constant(name, fallback) {
 /**
  * Turn the aligned-silhouette overlap into a friendly 0-100 score (same as the Python check).
  * matchShapes (Hu moments) is still measured and reported, but not scored: on thin-limbed
- * styling poses its higher-order Hu terms flip sign between near-identical shapes.
+ * ballet poses its higher-order Hu terms flip sign between near-identical shapes.
  */
 function scoreShapes(overlapRatio, attempt, reference) {
   const shape = Math.min(100, Math.max(0, (overlapRatio - OVERLAP_ZERO) / (OVERLAP_FULL - OVERLAP_ZERO) * 100));
@@ -142,8 +142,10 @@ function grabCutRefine(src, bin, rect, t) {
  * @param {ImageData} imageData  RGBA pixels, already scaled to MAX_SIDE by the worker
  * @param {{cleanup:number, threshold:(number|null), grabcut:boolean}} opts
  * @param {null|{points:Int32Array, aspect:number, solidity:number}} reference
+ * @param {Array<{id:string, name:string, points:Int32Array, aspect:number, solidity:number}>} [candidates]
+ *        library poses to rank the photo against (pose recognition)
  */
-function analyzeShape(imageData, opts, reference) {
+function analyzeShape(imageData, opts, reference, candidates) {
   const t0 = performance.now();
   const t = makeTracker();
   try {
@@ -175,7 +177,7 @@ function analyzeShape(imageData, opts, reference) {
     let clean = t.track(new cv.Mat());
     cv.morphologyEx(closed, clean, cv.MORPH_OPEN, kernel, anchor, 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
 
-    // 4. The dancer (or the couple) is the largest outline.
+    // 4. The dancer is the largest outline.
     let found = largestContour(t.track(clean.clone()), t);
     const minArea = 0.01 * clean.rows * clean.cols;
     if (!found.contour || found.area < minArea) {
@@ -224,14 +226,24 @@ function analyzeShape(imageData, opts, reference) {
       score = { distance, overlap: overlapRatio, ...scoreShapes(overlapRatio, metrics, reference) };
     }
 
-    // 8. Draw the result: tinted silhouette, gold hull, red outline.
+    // 7b. Pose recognition: score the same outline against every pose in the library, best first.
+    const ranking = [];
+    for (const c of (candidates || [])) {
+      if (!c.points || c.points.length < 6) continue;
+      const cm = t.track(cv.matFromArray(c.points.length / 2, 1, cv.CV_32SC2, Array.from(c.points)));
+      const s = scoreShapes(silhouetteOverlap(contour, cm, t), metrics, c);
+      ranking.push({ id: c.id, name: c.name, total: s.total });
+    }
+    ranking.sort((a, b) => b.total - a.total);
+
+    // 8. Draw the result: tinted silhouette, lilac hull, rose outline.
     const out = t.track(src.clone());
     const od = out.data, md = clean.data;
     for (let i = 0, p = 0; i < md.length; i++, p += 4) {
       if (md[i] > 127) {
-        od[p] = (od[p] * 0.55 + 255 * 0.45) | 0;
-        od[p + 1] = (od[p + 1] * 0.55 + 70 * 0.45) | 0;
-        od[p + 2] = (od[p + 2] * 0.55 + 85 * 0.45) | 0;
+        od[p] = (od[p] * 0.55 + 232 * 0.45) | 0;
+        od[p + 1] = (od[p + 1] * 0.55 + 87 * 0.45) | 0;
+        od[p + 2] = (od[p + 2] * 0.55 + 126 * 0.45) | 0;
       }
     }
     const vec = t.track(new cv.MatVector());
@@ -250,6 +262,7 @@ function analyzeShape(imageData, opts, reference) {
       points: new Int32Array(contour.data32S),       // x0,y0,x1,y1,... for storage and matching
       metrics,
       score,
+      ranking,
       ms: performance.now() - t0,
     };
   } finally {
@@ -258,5 +271,5 @@ function analyzeShape(imageData, opts, reference) {
 }
 
 if (typeof self !== 'undefined') {
-  self.SalsaPipeline = { analyzeShape, scoreShapes, memory, MAX_SIDE };
+  self.PosePipeline = { analyzeShape, scoreShapes, memory, MAX_SIDE };
 }

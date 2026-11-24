@@ -4,6 +4,6 @@ Sources: Apple HIG Materials: https://developer.apple.com/design/human-interface
 
 - Translucent layers that blur and tint what is behind them, giving depth without heavy shadows.
 - CSS: `background: rgba(255,255,255,.62); backdrop-filter: blur(28px) saturate(170%); border: 1px solid rgba(255,255,255,.7); border-radius: 22px;` plus a soft two-layer shadow.
-- Glass needs something colourful behind it: three large blurred blobs (salsa red, gold, magenta) fixed behind the page.
+- Glass needs something colourful behind it: three large blurred blobs (ballet pink `#f7a1c4`, lilac `#c8b6ff`, peach `#ffd6a5`) fixed behind the page.
 - Dark mode: darker, warmer tint (`rgba(40,22,30,.55)`), lower blob opacity, borders at 12 % white.
 - Keep text contrast AA on glass: the tint must be strong enough; test light, dark and narrow screenshots.

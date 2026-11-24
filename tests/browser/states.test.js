@@ -8,20 +8,20 @@
   const hasTry = () => !$('banner').hidden && [...$('banner').querySelectorAll('button')].some((b) => b.textContent === 'Try again');
   check('OpenCV load failure shows red pill', $('status').className.includes('pill-error'));
   check('OpenCV error banner has Try again', hasTry());
-  document.querySelector('.sample[data-src="samples/styling-high-arm-attempt.jpg"]').click();
-  for (let i = 0; i < 50 && !window.__salsa.state.busy; i++) await sleep(20);
-  for (let i = 0; i < 100 && window.__salsa.state.busy; i++) await sleep(50);
+  document.querySelector('.sample[data-src="samples/ballet-arabesque-attempt.jpg"]').click();
+  for (let i = 0; i < 50 && !window.__ballet.state.busy; i++) await sleep(20);
+  for (let i = 0; i < 100 && window.__ballet.state.busy; i++) await sleep(50);
   check('analyze while OpenCV failed keeps the Try again banner', hasTry());
-  window.__salsa.vision.onMessage({ type: 'status', state: 'ready', version: 'test' });
+  window.__ballet.vision.onMessage({ type: 'status', state: 'ready', version: 'test' });
   check('ready hides the OpenCV banner', $('banner').hidden);
-  await window.__salsa.renderLibrary();
-  const req = indexedDB.open('salsashapes', 2);            // a "newer tab"
+  await window.__ballet.renderLibrary();
+  const req = indexedDB.open('balletposes', 2);            // a "newer tab"
   await new Promise((r) => { req.onsuccess = r; req.onerror = r; });
   await sleep(100);
   check('versionchange banner shown', !$('banner').hidden && /newer version/.test($('banner').textContent));
-  window.__salsa.vision.onMessage({ type: 'status', state: 'ready', version: 'test' });
+  window.__ballet.vision.onMessage({ type: 'status', state: 'ready', version: 'test' });
   check('ready does not hide the versionchange banner', !$('banner').hidden && /newer version/.test($('banner').textContent));
   req.result && req.result.close();
-  await new Promise((r) => { const d = indexedDB.deleteDatabase('salsashapes'); d.onsuccess = r; d.onerror = r; });
+  await new Promise((r) => { const d = indexedDB.deleteDatabase('balletposes'); d.onsuccess = r; d.onerror = r; });
   return out.join('\n');
 })()

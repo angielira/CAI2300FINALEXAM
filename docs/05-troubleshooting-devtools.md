@@ -21,7 +21,7 @@ Sources:
 ## DevTools walk-through (Chrome)
 1. Right-click the app → **Inspect** (⌘⌥I / Ctrl+Shift+I).
 2. Top tabs: **»** → **Application** (or click it if visible).
-3. Left sidebar → **Storage → IndexedDB** → expand → **salsashapes**: shows version 1 and stores `references`, `attempts`, `settings`. **Delete database** removes just this database.
+3. Left sidebar → **Storage → IndexedDB** → expand → **balletposes**: shows version 1 and stores `references`, `attempts`, `settings`. **Delete database** removes just this database.
 4. Click a store to see one row per record; expand a value to look inside (Blobs show as Blob, points as Int32Array).
 5. The view does **not** update live: press the refresh button above the table after a new attempt.
 6. Reset everything: sidebar **Storage** → under **Clear site data** keep IndexedDB (and Cache storage) ticked → **Clear site data** → close DevTools → reload.

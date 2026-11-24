@@ -1,5 +1,5 @@
-/* Salsa Shape Matcher: the page.
- * Owners: Juno (frontend-engineer), with Wren (states and flow), Rosa (coach text),
+/* Ballet Pose Matcher: the page.
+ * Owners: Juno (frontend-engineer), with Wren (states and flow), Margot (coach text),
  * Forge (worker client) and Ledger (library). The page never runs OpenCV itself:
  * all vision work goes to shape.worker.js.
  */
@@ -85,7 +85,7 @@
       if (msg.type === 'result') p.resolve(msg.result); else p.reject(new Error(msg.message));
     }
 
-    analyze(bitmap, options, reference) {
+    analyze(bitmap, options, reference, candidates = []) {
       const id = ++this.seq;
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
@@ -94,12 +94,21 @@
           this.restart();
         }, ANALYSIS_TIMEOUT_MS + (cvReady ? 0 : LOAD_TIMEOUT_MS));
         this.pending.set(id, { resolve, reject, timer });
-        this.worker.postMessage({ type: 'analyze', id, bitmap, options, reference }, [bitmap]);
+        this.worker.postMessage({ type: 'analyze', id, bitmap, options, reference, candidates }, [bitmap]);
       });
     }
   }
   // Hide only a banner of this kind (an OpenCV error), never e.g. the library-blocked banner.
   function hideBannerIf(kind) { if ($('banner').dataset.kind === kind) hideBanner(); }
+
+  // ---------------------------------------------------------------- ballet pose gallery (Margot)
+  const POSES = [
+    ['arabesque', 'Arabesque'], ['penche', 'Penché'], ['attitude', 'Attitude derrière'], ['attitude-devant', 'Attitude devant'],
+    ['developpe-devant', 'Développé devant'], ['a-la-seconde', 'À la seconde'], ['ecarte', 'Écarté'], ['retire', 'Retiré'],
+    ['first-bras-bas', 'First position, bras bas'], ['fifth-en-haut', 'Fifth position, en haut'], ['second-plie', 'Second position plié'],
+    ['tendu-devant', 'Tendu devant'], ['tendu-seconde', 'Tendu à la seconde'], ['fourth-croise', 'Fourth position croisé'],
+    ['grand-jete', 'Grand jeté'], ['reverence', 'Révérence'],
+  ].map(([slug, name]) => ({ slug, name, ref: `samples/ballet-${slug}-reference.jpg`, attempt: `samples/ballet-${slug}-attempt.jpg` }));
 
   // ---------------------------------------------------------------- state
   const state = {
@@ -115,6 +124,7 @@
 
   function updateBusy() {
     $('btn-rerun').disabled = !state.blob || state.busy || !cvReady;
+    $('btn-add-all').disabled = state.busy || !cvReady;
     $('working').hidden = !state.busy;
   }
 
@@ -154,20 +164,20 @@
   }
   function selectedRef() { return state.refs.find((r) => r.id === state.settings.refId) || null; }
 
-  // ---------------------------------------------------------------- coach (Rosa)
+  // ---------------------------------------------------------------- coach (Margot)
   function coachText(score, parts, metrics, ref) {
     let head;
-    if (score >= 85) head = '¡Qué bueno! That is very close to your reference.';
-    else if (score >= 70) head = 'Close. The shape is there; polish the details.';
-    else if (score >= 50) head = 'Recognisable. Keep practising this one.';
-    else head = 'Quite a different shape. Check the reference you picked, and that your whole body is in the frame.';
+    if (score >= 85) head = 'Brava! That is very close to your reference.';
+    else if (score >= 70) head = 'Close. The line is there; refine the details.';
+    else if (score >= 50) head = 'Recognisable. Keep working on this position.';
+    else head = 'Quite a different position. Check the reference you picked, and that your whole body is in the frame.';
     const tips = [];
     const ratio = metrics.aspect / ref.aspect;
-    if (ratio > 1.12) tips.push('Your shape is taller and narrower than the reference. In a dip, go lower; in styling, open your arms wider.');
-    else if (ratio < 0.89) tips.push('Your shape is lower and wider than the reference. Lift through the chest and stack your frame.');
+    if (ratio > 1.12) tips.push('Your line is taller and narrower than the reference: extend the working leg and the arms further out.');
+    else if (ratio < 0.89) tips.push('Your shape is lower and wider than the reference: pull up through the standing leg and lengthen the spine.');
     const solid = metrics.solidity - ref.solidity;
-    if (solid > 0.05) tips.push('You look more compact: extend your arms and pointed foot to open the line.');
-    else if (solid < -0.05) tips.push('Your limbs reach further out than the reference. Bring the styling arm a little closer.');
+    if (solid > 0.05) tips.push('You look more compact: extend fully through the working leg and point the foot.');
+    else if (solid < -0.05) tips.push('Your limbs reach further out than the reference: bring the arms back into their rounded position.');
     return [head, ...tips.slice(0, 1)].join(' ');
   }
 
@@ -215,6 +225,16 @@
     dl.hidden = false;
   }
 
+  function showRanking(ranking) {
+    const el = $('ranking');
+    if (!ranking || !ranking.length) { el.hidden = true; return; }
+    const [best, ...rest] = ranking;
+    const sure = best.total >= 60 && (!rest.length || best.total - rest[0].total >= 10);
+    el.innerHTML = `<strong>${sure ? 'Looks most like' : 'Closest pose (not sure)'}: ${escapeHtml(best.name)} · ${best.total}%</strong>`
+      + (rest.length ? `<span>then ${rest.slice(0, 2).map((r) => `${escapeHtml(r.name)} ${r.total}%`).join(', ')}</span>` : '');
+    el.hidden = false;
+  }
+
   function showScore(score, metrics, ref) {
     const row = $('score-row');
     if (!score) { row.hidden = true; return; }
@@ -244,11 +264,12 @@
         grabcut: state.settings.grabcut,
       };
       const reference = ref ? { points: ref.points, aspect: ref.aspect, solidity: ref.solidity } : null;
-      const result = await vision.analyze(bitmap, options, reference);
+      const candidates = state.refs.map((r) => ({ id: r.id, name: r.name, points: r.points, aspect: r.aspect, solidity: r.solidity }));
+      const result = await vision.analyze(bitmap, options, reference, candidates);
       setStatus('ready', $('status-text').textContent.startsWith('Ready') ? $('status-text').textContent : 'Ready');
       if (!result.ok) {
         state.last = null;
-        $('score-row').hidden = true; $('metrics').hidden = true; $('save-ref').hidden = true;
+        $('score-row').hidden = true; $('metrics').hidden = true; $('save-ref').hidden = true; $('ranking').hidden = true;
         $('canvas').classList.add('hidden'); $('empty').hidden = false;
         $('empty').innerHTML = '<p><strong>No dancer found.</strong><br>Try a plainer wall, switch the threshold to Manual and move the slider, or turn on GrabCut.</p>';
         $('perf').textContent = `Looked for ${Math.round(result.ms)} ms.`;
@@ -258,6 +279,7 @@
       drawResult(result, ref);
       showMetrics(result.metrics);
       showScore(result.score, result.metrics, ref);
+      showRanking(result.ranking);
       $('save-ref').hidden = false;
       $('ref-name').value = suggestedName;
       $('perf').textContent = `OpenCV.js (WebAssembly, in a Web Worker) took ${Math.round(result.ms)} ms. `
@@ -397,9 +419,62 @@
   ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
   drop.addEventListener('drop', (e) => { const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) analyze(f); });
 
+  function renderGallery() {
+    $('samples').innerHTML = POSES.map((p) => `
+      <div class="pose" role="listitem">
+        <img src="${p.ref}" alt="" loading="lazy">
+        <span class="pose-name">${escapeHtml(p.name)}</span>
+        <span class="pose-btns">
+          <button class="sample btn btn-small" type="button" data-src="${p.ref}" data-name="${escapeHtml(p.name)}" aria-label="${escapeHtml(p.name)} reference photo">Reference</button>
+          <button class="sample btn btn-small" type="button" data-src="${p.attempt}" data-pose="${escapeHtml(p.name)}" aria-label="${escapeHtml(p.name)} attempt photo">Attempt</button>
+        </span>
+      </div>`).join('');
+  }
+
+  // Add every gallery pose to the library as a reference (skips names already there).
+  async function addAllPoses() {
+    const btn = $('btn-add-all');
+    const have = new Set(state.refs.map((r) => r.name));
+    const todo = POSES.filter((p) => !have.has(p.name));
+    if (!todo.length) { showBanner('All 16 poses are already in your library.'); setTimeout(hideBanner, 3000); return; }
+    state.busy = true; updateBusy();
+    let added = 0;
+    try {
+      for (const p of todo) {
+        btn.textContent = `Adding ${p.name}… (${added + 1}/${todo.length})`;
+        const blob = await (await fetch(p.ref)).blob();
+        const r = await vision.analyze(await createImageBitmap(blob), { cleanup: 3, threshold: null, grabcut: false }, null, []);
+        if (!r.ok) continue;
+        const c = document.createElement('canvas');
+        c.width = r.width; c.height = r.height;
+        c.getContext('2d').putImageData(new ImageData(r.pixels, r.width, r.height), 0, 0);
+        const imageBlob = await canvasToBlob(c);
+        const thumbBlob = await scaledBlob(await createImageBitmap(c), 360);
+        await DB.saveReference({ id: DB.newId(), name: p.name, createdAt: Date.now() + added, points: r.points,
+          aspect: r.metrics.aspect, solidity: r.metrics.solidity, imageBlob, thumbBlob });
+        added++;
+      }
+      await renderLibrary();
+      showBanner(`Added ${added} pose${added === 1 ? '' : 's'} to your library. Open any <em>Attempt</em> to get a score and see which pose it looks like.`);
+      setTimeout(hideBanner, 5000);
+    } catch (err) {
+      libraryError(err);
+    } finally {
+      btn.textContent = 'Add all 16 poses to my library';
+      state.busy = false; updateBusy();
+      await renderLibrary().catch(() => {});
+    }
+  }
+  $('btn-add-all').addEventListener('click', addAllPoses);
+
   $('samples').addEventListener('click', async (e) => {
     const btn = e.target.closest('.sample');
     if (!btn) return;
+    // Opening an attempt: compare it with the same pose if that pose is in the library.
+    if (btn.dataset.pose) {
+      const match = state.refs.find((r) => r.name === btn.dataset.pose);
+      if (match && state.settings.refId !== match.id) { state.settings.refId = match.id; $('ref-select').value = match.id; persistSettings(); }
+    }
     try {
       const res = await fetch(btn.dataset.src);
       if (!res.ok) throw new Error(`Could not load the sample (${res.status})`);
@@ -521,6 +596,7 @@
   });
 
   // ---------------------------------------------------------------- start
+  renderGallery();
   (async () => {
     try {
       const saved = await DB.getSettings();
@@ -541,5 +617,5 @@
   }
 
   // Exposed for the QA tests only.
-  window.__salsa = { state, vision, renderLibrary };
+  window.__ballet = { state, vision, renderLibrary, addAllPoses, POSES };
 })();

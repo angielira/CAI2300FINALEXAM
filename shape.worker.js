@@ -1,4 +1,4 @@
-/* Salsa Shape Matcher: the Web Worker.
+/* Ballet Pose Matcher: the Web Worker.
  * Owner: Forge (wasm-expert). Pipeline by Iris (opencv-expert).
  *
  * Loads OpenCV.js (OpenCV compiled to WebAssembly) ONCE, then runs every analysis
@@ -67,7 +67,7 @@ async function loadOpenCV() {
 
 /** ImageBitmap -> ImageData, scaled so the long side is at most MAX_SIDE. */
 function bitmapToImageData(bitmap) {
-  const max = self.SalsaPipeline.MAX_SIDE;
+  const max = self.PosePipeline.MAX_SIDE;
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   const w = Math.max(1, Math.round(bitmap.width * scale));
   const h = Math.max(1, Math.round(bitmap.height * scale));
@@ -93,8 +93,8 @@ self.onmessage = async (event) => {
   }
   try {
     const imageData = bitmapToImageData(msg.bitmap);
-    const result = self.SalsaPipeline.analyzeShape(imageData, msg.options || {}, msg.reference || null);
-    const mem = self.SalsaPipeline.memory;
+    const result = self.PosePipeline.analyzeShape(imageData, msg.options || {}, msg.reference || null, msg.candidates || []);
+    const mem = self.PosePipeline.memory;
     result.matsAlive = mem.allocated - mem.freed;      // should always be 0
     result.matsFreedTotal = mem.freed;
     const transfer = result.ok ? [result.pixels.buffer, result.points.buffer] : [];

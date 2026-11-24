@@ -1,7 +1,7 @@
-/* Salsa Shape Matcher: the IndexedDB layer.
+/* Ballet Pose Matcher: the IndexedDB layer.
  * Owner: Ledger (indexeddb-expert). Reviewed by Vera (qa-tester).
  *
- * Database "salsashapes", version 1, three object stores:
+ * Database "balletposes", version 1, three object stores:
  *   references  { id, name, createdAt, points:Int32Array, aspect, solidity, imageBlob, thumbBlob }
  *               index "byName" (name), index "byCreated" (createdAt)
  *   attempts    { id, createdAt, refId, refName, score, parts, metrics, ms, originalBlob, resultBlob, thumbBlob }
@@ -12,7 +12,7 @@
  */
 'use strict';
 
-const DB_NAME = 'salsashapes';
+const DB_NAME = 'balletposes';
 const DB_VERSION = 1;
 
 let dbPromise = null;

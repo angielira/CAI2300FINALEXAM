@@ -1,17 +1,29 @@
-/* Salsa Shape Matcher: service worker (offline support).
+/* Ballet Pose Matcher: service worker (offline support).
  * Owner: Forge (wasm-expert) with Harbor (netlify-deployer).
  * - App files: network first (you always get the newest deploy), cache as fallback offline.
  * - OpenCV.js (~10 MB): cache first after the first successful download.
  * "Reset app data" deletes these caches and unregisters this worker.
  */
-const CACHE = 'salsa-shapes-v2';   // bumped: new sample photos
+const CACHE = 'ballet-poses-v4';   // bumped: 16 ballet poses
 const APP_SHELL = [
   './', 'index.html', 'how-it-works.html', 'resources.html',
   'css/app.css', 'js/app.js', 'js/db.js', 'js/pipeline.js', 'shape.worker.js',
-  'samples/styling-high-arm-reference.jpg', 'samples/styling-high-arm-attempt.jpg',
-  'samples/styling-hip-hand-reference.jpg', 'samples/styling-hip-hand-attempt.jpg',
-  'samples/styling-frame-up-reference.jpg', 'samples/styling-frame-up-attempt.jpg',
-  'samples/styling-lean-sweep-reference.jpg', 'samples/styling-lean-sweep-attempt.jpg',
+  'samples/ballet-a-la-seconde-reference.jpg', 'samples/ballet-a-la-seconde-attempt.jpg',
+  'samples/ballet-arabesque-reference.jpg', 'samples/ballet-arabesque-attempt.jpg',
+  'samples/ballet-attitude-reference.jpg', 'samples/ballet-attitude-attempt.jpg',
+  'samples/ballet-attitude-devant-reference.jpg', 'samples/ballet-attitude-devant-attempt.jpg',
+  'samples/ballet-developpe-devant-reference.jpg', 'samples/ballet-developpe-devant-attempt.jpg',
+  'samples/ballet-ecarte-reference.jpg', 'samples/ballet-ecarte-attempt.jpg',
+  'samples/ballet-fifth-en-haut-reference.jpg', 'samples/ballet-fifth-en-haut-attempt.jpg',
+  'samples/ballet-first-bras-bas-reference.jpg', 'samples/ballet-first-bras-bas-attempt.jpg',
+  'samples/ballet-fourth-croise-reference.jpg', 'samples/ballet-fourth-croise-attempt.jpg',
+  'samples/ballet-grand-jete-reference.jpg', 'samples/ballet-grand-jete-attempt.jpg',
+  'samples/ballet-penche-reference.jpg', 'samples/ballet-penche-attempt.jpg',
+  'samples/ballet-retire-reference.jpg', 'samples/ballet-retire-attempt.jpg',
+  'samples/ballet-reverence-reference.jpg', 'samples/ballet-reverence-attempt.jpg',
+  'samples/ballet-second-plie-reference.jpg', 'samples/ballet-second-plie-attempt.jpg',
+  'samples/ballet-tendu-devant-reference.jpg', 'samples/ballet-tendu-devant-attempt.jpg',
+  'samples/ballet-tendu-seconde-reference.jpg', 'samples/ballet-tendu-seconde-attempt.jpg',
 ];
 
 self.addEventListener('install', (event) => {

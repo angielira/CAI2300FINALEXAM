@@ -1,5 +1,5 @@
-"""Check the Salsa Shape Matcher vision pipeline with Python OpenCV.
-Score = aligned-silhouette overlap (main) + proportions + openness; matchShapes (Hu moments)
+"""Check the Ballet Pose Matcher vision pipeline with Python OpenCV.
+Score = aligned-silhouette overlap (main) + proportions + openness. The test: every\nattempt photo must score highest against its own reference (16 ballet poses).\nScoring: matchShapes (Hu moments)
 is reported too, but not scored: its higher-order Hu terms flip sign on thin-limbed poses.
 
 This mirrors js/pipeline.js step for step (same functions, same parameters), so it
@@ -91,13 +91,26 @@ if __name__ == "__main__":
         if s is None:
             print("FAIL no silhouette:", n); ok = False; continue
         sil[n] = s
-        print(f"{n:34s} area={s['area']:8.0f} aspect={s['aspect']:.2f} solidity={s['solidity']:.2f} points={len(s['contour'])}")
-    print()
-    for a, b in itertools.combinations(names, 2):
-        sc, d, o = score(sil[a], sil[b])
-        same = a.rsplit("-", 1)[0] == b.rsplit("-", 1)[0]   # styling-<pose>-reference / -attempt
-        print(f"{a:34s} vs {b:34s} overlap={o:.2f} matchShapes={d:6.3f} score={sc:3d}%  {'SAME pose' if same else 'different'}")
-        if same and sc < 70: ok = False; print("  FAIL: same shape should score >= 70")
-        if not same and sc > 55: ok = False; print("  FAIL: different shapes should score <= 55")
+    print(f"{len(sil)}/{len(names)} sample photos: silhouette found\n")
+    refs = [n for n in names if n.endswith("-reference.jpg")]
+    atts = [n for n in names if n.endswith("-attempt.jpg")]
+    # Recognition test: each attempt must score highest against its own reference,
+    # score at least 60 %, and beat the runner-up by at least 10 points.
+    print(f"{'pose':20s} {'own':>4s}  {'overlap':>7s} {'matchShapes':>11s}   runner-up")
+    for a in atts:
+        pose = a[:-len("-attempt.jpg")]
+        rows = []
+        for r in refs:
+            sc, d, o = score(sil[a], sil[r])
+            rows.append((sc, r[:-len("-reference.jpg")], d, o))
+        rows.sort(reverse=True)
+        own = next(x for x in rows if x[1] == pose)
+        runner = next(x for x in rows if x[1] != pose)
+        verdict = "PASS"
+        if rows[0][1] != pose: verdict = "FAIL: best match is " + rows[0][1]
+        elif own[0] < 60: verdict = "FAIL: own score below 60"
+        elif own[0] - runner[0] < 10: verdict = "FAIL: margin below 10"
+        ok &= verdict == "PASS"
+        print(f"{pose[7:]:20s} {own[0]:3d}%  {own[3]:7.2f} {own[2]:11.3f}   {runner[1][7:]:18s} {runner[0]:3d}%  {verdict}")
     print("\nRESULT:", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)

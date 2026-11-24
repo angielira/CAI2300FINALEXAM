@@ -107,3 +107,22 @@ Not fixed (low, logged): `sw.js:37` caches an opaque opencv.js response even if 
 | 50 | Atlas → Juno + Harbor | 8 sample buttons, datalist names; service-worker cache list (cache bumped to v2) | UI + offline | `index.html`, `sw.js` |
 | 51 | Atlas → Vera | Re-run everything | acceptance gate | pipeline PASS; db 9/9, 3/3, 2/2; flow 9/9 (score 83); states 6/6; screenshot checked |
 | 52 | Atlas → Quill + Echo | README, How it works, docs/01, docs/06, knowledge notes, roster/skills regenerated | docs | done |
+
+## Change 2026-11-23: from salsa to 16 ballet poses
+
+**Requests (user):** "update the app instead of salsa to ballet dance poses", then "add at least 15 ballet poses".
+**How it ran (plain statement):** done in the main Claude session following each expert's role and knowledge folder, not as separate agents.
+
+| # | From → To | What | Why | Outcome |
+|---|---|---|---|---|
+| 53 | User → Atlas | Salsa → ballet | user request | app renamed **Ballet Pose Matcher** |
+| 54 | Atlas → Echo | Replace the salsa coach with a ballet coach | domain change | agent `ballet-coach` (Margot, sonnet), skill `ballet-pose-coaching`, `knowledge/ballet-coach/`; old salsa agent and skill removed; roster/brains regenerated |
+| 55 | Atlas → Margot | Choose the poses | domain | 16 poses: arabesque, penché, attitude derrière/devant, développé devant, à la seconde, écarté, retiré, first bras bas, fifth en haut, second plié, tendu devant/à la seconde, fourth croisé, grand jeté, révérence |
+| 56 | Margot → Atlas → Iris | Draw them with a tutu | samples | `tests/make_samples.py` → 32 photos |
+| 57 | Margot → Atlas → Iris | Review: attitude's raised arm "looks like an antenna"; attitude devant "looks like marching"; révérence "looks like falling", then "a stride" | visual review | arm curved over the head; shin reaching forward; révérence redrawn as a bow with the back foot pointed |
+| 58 | Iris → Atlas → Vera | "Every different pair ≤ 55 %" is the wrong test for 16 real positions (first vs fifth *should* look alike) | test design | test changed to **recognition**: each attempt's best match is its own pose, ≥ 60 %, ≥ 10 points ahead → 16/16 PASS (margins ≥ 18) |
+| 59 | Atlas → Iris + Forge | Pose recognition | feature | `analyzeShape(..., candidates)` scores the same outline against every library pose (all Mats tracked); returns `ranking` |
+| 60 | Atlas → Wren + Juno + Sable | 16 poses don't fit 8 buttons | UI | scrollable gallery generated from one `POSES` list; **Add all 16 poses to my library**; opening an attempt auto-selects its pose; "Looks most like" box; rose-and-lilac palette |
+| 61 | Atlas → Ledger | Database for the new app | storage | new name `balletposes` (salsa data is not carried over); service-worker cache `ballet-poses-v4` lists all 32 photos |
+| 62 | Atlas → Vera | Test everything | acceptance gate | pipeline 16/16; db 9/9, 3/3, 2/2; flow 12/12; states 6/6; new gallery test 8/8 |
+| 63 | Atlas → Quill + Echo | README, How it works, docs/01, docs/06, knowledge | docs | done |

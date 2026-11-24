@@ -2,7 +2,7 @@
 // Version 1 is what the app ships. Version 2 shows how a future "favourite" index would be added.
 function openLibrary(version = 1) {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('salsashapes', version);
+    const req = indexedDB.open('balletposes', version);
     req.onupgradeneeded = (e) => {
       const db = req.result, tx = req.transaction;
       if (e.oldVersion < 1) {

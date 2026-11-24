@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Salsa Shape Matcher</title>
-  <meta name="description" content="Practise your salsa shapes. OpenCV.js finds your silhouette in the browser, scores it against a reference, and IndexedDB keeps your progress.">
-  <meta name="theme-color" content="#1a0a12">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ff4655'/%3E%3Cpath d='M22 46c6-10 14-14 22-28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='44' cy='16' r='5' fill='white'/%3E%3C/svg%3E">
+  <title>Ballet Pose Matcher</title>
+  <meta name="description" content="Practise your ballet positions. OpenCV.js finds your silhouette in the browser, scores it against a reference, and IndexedDB keeps your progress.">
+  <meta name="theme-color" content="#2a1020">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e8577e'/%3E%3Cpath d='M22 46c6-10 14-14 22-28' stroke='white' stroke-width='6' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='44' cy='16' r='5' fill='white'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
   <div class="backdrop" aria-hidden="true"><span></span><span></span><span></span></div>
 
   <header class="topbar glass">
-    <a class="brand" href="./" aria-label="Salsa Shape Matcher home">
+    <a class="brand" href="./" aria-label="Ballet Pose Matcher home">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span>Salsa Shape Matcher</span>
+      <span>Ballet Pose Matcher</span>
     </a>
     <nav class="nav">
       <a href="how-it-works.html">How it works</a>
@@ -32,7 +32,7 @@
     <!-- 1. Photo -->
     <section class="card glass" aria-labelledby="h-photo">
       <h2 id="h-photo"><span class="step">1</span> Your shape</h2>
-      <p class="hint">Stand in front of a plain wall, with your whole body (or both of you) in the frame.</p>
+      <p class="hint">Stand in front of a plain wall, with your whole body in the frame, from your hands to your pointed feet.</p>
 
       <label id="drop" class="drop" tabindex="0">
         <input id="file" type="file" accept="image/*" hidden>
@@ -48,18 +48,10 @@
         </button>
       </div>
 
-      <h3 class="sub">Try a sample: four shine styling poses</h3>
-      <div class="samples" id="samples">
-        <button class="sample" type="button" data-src="samples/styling-high-arm-reference.jpg" data-name="Styling · high arm"><img src="samples/styling-high-arm-reference.jpg" alt="" loading="lazy"><span>High arm · reference</span></button>
-        <button class="sample" type="button" data-src="samples/styling-high-arm-attempt.jpg"><img src="samples/styling-high-arm-attempt.jpg" alt="" loading="lazy"><span>High arm · attempt</span></button>
-        <button class="sample" type="button" data-src="samples/styling-hip-hand-reference.jpg" data-name="Styling · hand on hip"><img src="samples/styling-hip-hand-reference.jpg" alt="" loading="lazy"><span>Hand on hip · reference</span></button>
-        <button class="sample" type="button" data-src="samples/styling-hip-hand-attempt.jpg"><img src="samples/styling-hip-hand-attempt.jpg" alt="" loading="lazy"><span>Hand on hip · attempt</span></button>
-        <button class="sample" type="button" data-src="samples/styling-frame-up-reference.jpg" data-name="Styling · arms framing"><img src="samples/styling-frame-up-reference.jpg" alt="" loading="lazy"><span>Arms framing · reference</span></button>
-        <button class="sample" type="button" data-src="samples/styling-frame-up-attempt.jpg"><img src="samples/styling-frame-up-attempt.jpg" alt="" loading="lazy"><span>Arms framing · attempt</span></button>
-        <button class="sample" type="button" data-src="samples/styling-lean-sweep-reference.jpg" data-name="Styling · lean & sweep"><img src="samples/styling-lean-sweep-reference.jpg" alt="" loading="lazy"><span>Lean & sweep · reference</span></button>
-        <button class="sample" type="button" data-src="samples/styling-lean-sweep-attempt.jpg"><img src="samples/styling-lean-sweep-attempt.jpg" alt="" loading="lazy"><span>Lean & sweep · attempt</span></button>
-      </div>
-      <p class="hint small">New here? Open a <em>reference</em> sample and save it, then open its <em>attempt</em> to get a score.</p>
+      <h3 class="sub">Ballet pose gallery: 16 poses</h3>
+      <button id="btn-add-all" class="btn btn-wide btn-primary" type="button" disabled>Add all 16 poses to my library</button>
+      <div class="poses" id="samples" role="list" aria-label="Ballet pose samples"></div>
+      <p class="hint small">Each pose has a <em>reference</em> photo and an <em>attempt</em> photo. Add the poses to your library, then open any attempt: the app scores it and recognises which pose it is.</p>
     </section>
 
     <!-- 2. Compare & settings -->
@@ -119,14 +111,16 @@
         </div>
       </div>
 
+      <div class="ranking" id="ranking" hidden></div>
+
       <dl class="metrics" id="metrics" hidden></dl>
 
       <div class="save-ref" id="save-ref" hidden>
         <label class="field grow">
           <span>Save this as a reference shape</span>
-          <input id="ref-name" list="ref-names" placeholder="e.g. Styling · high arm" maxlength="40">
+          <input id="ref-name" list="ref-names" placeholder="e.g. Arabesque" maxlength="40">
           <datalist id="ref-names">
-            <option value="Styling · high arm"><option value="Styling · hand on hip"><option value="Styling · arms framing"><option value="Styling · lean &amp; sweep"><option value="Ending pose"><option value="Dip">
+            <option value="Arabesque"><option value="À la seconde"><option value="Retiré"><option value="Attitude"><option value="Développé devant"><option value="Fifth position, arms en haut"><option value="Penché">
           </datalist>
         </label>
         <button id="btn-save-ref" class="btn btn-primary" type="button">Save reference</button>

@@ -1,7 +1,7 @@
 // Worked example (Ledger): the "Reset app data" function.
 // Close our own connection first (or our own tab would block the delete),
 // delete the database, then the caches and the service worker, then reload.
-async function resetAppData(db, name = 'salsashapes') {
+async function resetAppData(db, name = 'balletposes') {
   if (db) db.close();
   await new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(name);

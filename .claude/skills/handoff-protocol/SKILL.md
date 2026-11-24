@@ -5,7 +5,7 @@ description: How experts hand work to each other through the orchestrator, run i
 
 # handoff-protocol
 
-Shared by: `orchestrator`, `meta-agent`, `opencv-expert`, `wasm-expert`, `indexeddb-expert`, `ux-designer-apple-hig`, `ui-designer-apple-liquid-glass`, `frontend-engineer`, `qa-tester`, `salsa-coach`, `netlify-deployer`, `docs-writer`
+Shared by: `orchestrator`, `meta-agent`, `opencv-expert`, `wasm-expert`, `indexeddb-expert`, `ux-designer-apple-hig`, `ui-designer-apple-liquid-glass`, `frontend-engineer`, `qa-tester`, `ballet-coach`, `netlify-deployer`, `docs-writer`
 
 1. Experts never call each other directly; they return results to the orchestrator, which passes them on.
 2. The orchestrator launches every expert whose inputs are ready at the same time; it waits only on real dependencies.
