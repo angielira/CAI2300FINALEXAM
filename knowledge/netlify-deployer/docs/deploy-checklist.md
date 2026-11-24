@@ -1,5 +1,7 @@
 # Deploy checklist
 
+Sources: https://docs.netlify.com/ · https://docs.netlify.com/manage/routing/headers/ · the exam guide (steps 10–11)
+
 1. app.netlify.com → Add new project → Import an existing project → GitHub → `CAI2300FINALEXAM`.
 2. Project name → becomes `<name>.netlify.app`. Build command: empty. Publish directory: `.`. No env vars. Deploy.
 3. Open the URL in Chrome. Pill turns green "Ready · OpenCV 4.x" (first load downloads ~10 MB).

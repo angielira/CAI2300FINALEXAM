@@ -1,5 +1,7 @@
 # Every state the dancer can see
 
+Sources: https://developer.apple.com/design/human-interface-guidelines/ (feedback, loading) · `js/app.js` in this repo
+
 | Area | State | What they see | Way out |
 |---|---|---|---|
 | Status pill | Loading OpenCV… | pulsing amber dot | wait (2-min timeout) |

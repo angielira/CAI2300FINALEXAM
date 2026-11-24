@@ -1,5 +1,7 @@
 # Test plan
 
+Sources: the exam guide's requirements and grading table · `tests/` in this repo · https://chromedevtools.github.io/devtools-protocol/
+
 | Requirement (exam) | Test | Tool |
 |---|---|---|
 | Real computer vision | silhouettes found on all 4 samples; same-shape ≥ 70 %, different ≤ 55 % | `python3 tests/pipeline_check.py` |
