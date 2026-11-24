@@ -11,7 +11,10 @@
 'use strict';
 
 const MAX_SIDE = 800;               // cap the photo size (Forge + Iris agreed: memory and speed)
-const SHAPE_HALF_SCORE = 1.5;       // matchShapes distance that scores 50%
+const NORM = 160;                   // normalised comparison canvas (same as tests/pipeline_check.py)
+const DILATE = 9;                   // tolerance for small limb differences (~6 % of body height)
+const OVERLAP_ZERO = 0.35;          // overlap that scores 0 %
+const OVERLAP_FULL = 0.90;          // overlap that scores 100 %
 const OVERLAY_RGBA = [255, 70, 85, 255];   // salsa red outline
 const HULL_RGBA = [255, 196, 0, 255];      // gold convex hull
 
@@ -35,15 +38,55 @@ function constant(name, fallback) {
   return typeof cv[name] === 'number' ? cv[name] : fallback;
 }
 
-/** Turn a matchShapes distance into a friendly 0-100 score (same as the Python check). */
-function scoreShapes(distance, attempt, reference) {
-  const shape = 100 / (1 + Math.pow(distance / SHAPE_HALF_SCORE, 3));
+/**
+ * Turn the aligned-silhouette overlap into a friendly 0-100 score (same as the Python check).
+ * matchShapes (Hu moments) is still measured and reported, but not scored: on thin-limbed
+ * styling poses its higher-order Hu terms flip sign between near-identical shapes.
+ */
+function scoreShapes(overlapRatio, attempt, reference) {
+  const shape = Math.min(100, Math.max(0, (overlapRatio - OVERLAP_ZERO) / (OVERLAP_FULL - OVERLAP_ZERO) * 100));
   const aspect = Math.exp(-Math.abs(Math.log(attempt.aspect / reference.aspect)) / 0.35) * 100;
   const solidity = Math.max(0, 1 - Math.abs(attempt.solidity - reference.solidity) / 0.3) * 100;
   return {
     total: Math.round(0.6 * shape + 0.25 * aspect + 0.15 * solidity),
     parts: { shape: Math.round(shape), proportions: Math.round(aspect), openness: Math.round(solidity) },
   };
+}
+
+/**
+ * Scale a contour to the same height, align its top edge and its centroid, and fill it
+ * on a NORM x NORM canvas, slightly dilated. Returns a tracked 8-bit mask.
+ */
+function normalizedMask(contourMat, t) {
+  const r = cv.boundingRect(contourMat);
+  const m = cv.moments(contourMat, false);
+  const cx = m.m10 / m.m00;
+  const s = (NORM * 0.9) / r.height;
+  const src = contourMat.data32S;
+  const pts = new Array(src.length);
+  for (let i = 0; i < src.length; i += 2) {
+    pts[i] = Math.round((src[i] - cx) * s + NORM / 2);
+    pts[i + 1] = Math.round((src[i + 1] - r.y) * s + NORM * 0.05);
+  }
+  const scaled = t.track(cv.matFromArray(src.length / 2, 1, cv.CV_32SC2, pts));
+  const vec = t.track(new cv.MatVector());
+  vec.push_back(scaled);
+  const mask = t.track(cv.Mat.zeros(NORM, NORM, cv.CV_8UC1));
+  const noHierarchy = t.track(new cv.Mat());
+  cv.drawContours(mask, vec, 0, new cv.Scalar(255, 255, 255, 255), -1, cv.LINE_8, noHierarchy, 0);   // -1 = filled
+  const kernel = t.track(cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(DILATE, DILATE)));
+  const out = t.track(new cv.Mat());
+  cv.dilate(mask, out, kernel, new cv.Point(-1, -1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+  return out;
+}
+
+/** Intersection over union of two aligned silhouettes, 0..1. */
+function silhouetteOverlap(a, b, t) {
+  const ma = normalizedMask(a, t), mb = normalizedMask(b, t);
+  const inter = t.track(new cv.Mat()), union = t.track(new cv.Mat());
+  cv.bitwise_and(ma, mb, inter);
+  cv.bitwise_or(ma, mb, union);
+  return cv.countNonZero(inter) / Math.max(1, cv.countNonZero(union));
 }
 
 /** True when most of the frame border is white, i.e. the wall came out as foreground. */
@@ -172,12 +215,13 @@ function analyzeShape(imageData, opts, reference) {
       points: contour.rows,
     };
 
-    // 7. Compare with the reference shape (Hu-moment based, scale & rotation invariant).
+    // 7. Compare with the reference shape: aligned-silhouette overlap (scored) + Hu moments (reported).
     let score = null;
     if (reference && reference.points && reference.points.length >= 6) {
       const ref = t.track(cv.matFromArray(reference.points.length / 2, 1, cv.CV_32SC2, Array.from(reference.points)));
+      const overlapRatio = silhouetteOverlap(contour, ref, t);
       const distance = cv.matchShapes(contour, ref, constant('CONTOURS_MATCH_I2', 2), 0);
-      score = { distance, ...scoreShapes(distance, metrics, reference) };
+      score = { distance, overlap: overlapRatio, ...scoreShapes(overlapRatio, metrics, reference) };
     }
 
     // 8. Draw the result: tinted silhouette, gold hull, red outline.

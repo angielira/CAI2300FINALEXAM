@@ -1,6 +1,6 @@
 """Worked example (Iris): the silhouette + score pipeline in OpenCV for Python.
-Same steps and numbers as js/pipeline.js. Run from the repo root:
-    python3 knowledge/opencv-expert/examples/silhouette_score.py
+Same steps and numbers as js/pipeline.js (aligned-overlap score; matchShapes reported).
+Run from the repo root:  python3 knowledge/opencv-expert/examples/silhouette_score.py
 """
 import math, os, sys, itertools
 import numpy as np
@@ -44,14 +44,38 @@ def silhouette(bgr, cleanup=3, manual_threshold=None):
             "solidity": area / max(1.0, cv2.contourArea(hull)), "size": binary.shape}
 
 
+NORM = 160          # size of the normalised comparison canvas
+DILATE = 9          # tolerance for small limb differences (about 6 % of body height)
+
+
+def normalized_mask(contour):
+    """Scale a silhouette to the same height, align its top edge and its centroid, fill it."""
+    x, y, w, h = cv2.boundingRect(contour)
+    m = cv2.moments(contour)
+    cx = m["m10"] / m["m00"]
+    s = (NORM * 0.9) / h
+    pts = ((contour.reshape(-1, 2) - [cx, y]) * s + [NORM / 2, NORM * 0.05]).round().astype(np.int32)
+    mask = np.zeros((NORM, NORM), np.uint8)
+    cv2.drawContours(mask, [pts], 0, 255, -1)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DILATE, DILATE))
+    return cv2.dilate(mask, kernel)
+
+
+def overlap(a, b):
+    """Intersection over union of the two aligned silhouettes (0..1)."""
+    ma, mb = normalized_mask(a["contour"]), normalized_mask(b["contour"])
+    return cv2.countNonZero(cv2.bitwise_and(ma, mb)) / max(1, cv2.countNonZero(cv2.bitwise_or(ma, mb)))
+
+
 def score(a, b):
     """Same formula as js/pipeline.js -> scoreShapes()."""
-    d = cv2.matchShapes(a["contour"], b["contour"], cv2.CONTOURS_MATCH_I2, 0)
-    shape = 100 / (1 + (d / 1.5) ** 3)      # 0 -> 100%, 1.5 -> 50%
+    o = overlap(a, b)
+    d = cv2.matchShapes(a["contour"], b["contour"], cv2.CONTOURS_MATCH_I2, 0)   # reported, not scored
+    shape = min(100.0, max(0.0, (o - 0.35) / (0.90 - 0.35) * 100))           # 0.35 -> 0 %, 0.90 -> 100 %
     ar = math.exp(-abs(math.log(a["aspect"] / b["aspect"])) / 0.35) * 100
     so = max(0.0, 1 - abs(a["solidity"] - b["solidity"]) / 0.3) * 100
     total = 0.6 * shape + 0.25 * ar + 0.15 * so
-    return round(total), d
+    return round(total), d, o
 
 
 if __name__ == "__main__":
@@ -63,12 +87,12 @@ if __name__ == "__main__":
         if s is None:
             print("FAIL no silhouette:", n); ok = False; continue
         sil[n] = s
-        print(f"{n:24s} area={s['area']:8.0f} aspect={s['aspect']:.2f} solidity={s['solidity']:.2f} points={len(s['contour'])}")
+        print(f"{n:34s} area={s['area']:8.0f} aspect={s['aspect']:.2f} solidity={s['solidity']:.2f} points={len(s['contour'])}")
     print()
     for a, b in itertools.combinations(names, 2):
-        sc, d = score(sil[a], sil[b])
-        same = a.split("-")[0] == b.split("-")[0]
-        print(f"{a:24s} vs {b:24s} matchShapes={d:.3f} score={sc:3d}%  {'SAME shape' if same else 'different'}")
+        sc, d, o = score(sil[a], sil[b])
+        same = a.rsplit("-", 1)[0] == b.rsplit("-", 1)[0]   # styling-<pose>-reference / -attempt
+        print(f"{a:34s} vs {b:34s} overlap={o:.2f} matchShapes={d:6.3f} score={sc:3d}%  {'SAME pose' if same else 'different'}")
         if same and sc < 70: ok = False; print("  FAIL: same shape should score >= 70")
         if not same and sc > 55: ok = False; print("  FAIL: different shapes should score <= 55")
     print("\nRESULT:", "PASS" if ok else "FAIL")

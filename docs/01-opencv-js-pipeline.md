@@ -29,17 +29,24 @@ Sources:
 | Optional refine | `cv.grabCut(rgb, mask, rect, bgd, fgd, iters, cv.GC_INIT_WITH_MASK)` | Graph-cut foreground extraction, seeded from the threshold mask. Needs a 3-channel image (`COLOR_RGBA2RGB`). Slower: off by default. |
 | Simplify | `cv.approxPolyDP(c, out, 0.001 * cv.arcLength(c, true), true)` | Fewer points to store; shape unchanged (tested). |
 | Measure | `cv.boundingRect`, `cv.convexHull(c, hull, false, true)`, `cv.contourArea` | Height ÷ width (aspect) and solidity = area ÷ hull area ("how open" the shape is). |
-| Compare | `cv.matchShapes(a, b, cv.CONTOURS_MATCH_I2, 0)` | Distance between the two shapes' **Hu moments** (7 numbers invariant to position, scale and rotation). 0 = identical. |
+| Compare (scored) | `cv.moments` (centroid), `cv.Mat.zeros`, `cv.drawContours(..., -1)` (fill), `cv.dilate`, `cv.bitwise_and`, `cv.bitwise_or`, `cv.countNonZero` | **Aligned-silhouette overlap**: both contours scaled to the same height, top edges and centroids aligned on a 160×160 canvas, filled, dilated 9 px (limb tolerance), then intersection ÷ union. Rotation-sensitive, which is right for dance. |
+| Compare (reported) | `cv.matchShapes(a, b, cv.CONTOURS_MATCH_I2, 0)` | Distance between the two shapes' **Hu moments** (7 numbers invariant to position, scale and rotation). 0 = identical. |
 | Draw | `cv.drawContours(out, vec, i, color, thickness, cv.LINE_AA, hierarchy, 0)` | Outline + hull on the result. The page draws it with `ctx.putImageData` (in a worker, `cv.imshow` has no canvas to draw on). |
 
 ### Measured on the sample photos (tests/pipeline_check.py, OpenCV 5.0 Python)
-| Pair | matchShapes (I2) | Score |
-|---|---|---|
-| dip-attempt vs dip-reference | 0.63 | 93 % |
-| styling-attempt vs styling-reference | 1.05 | 82 % |
-| dip vs styling (4 cross pairs) | 2.57 – 2.81 | 23 – 27 % |
+Four shine styling poses, each with a reference and an attempt (`samples/styling-<pose>-reference|attempt.jpg`).
 
-Score formula (same in Python and JS): `shape = 100 / (1 + (d / 1.5)^3)` (so a distance of 1.5 scores 50 %), blended 60 % shape + 25 % proportions (aspect ratio) + 15 % openness (solidity). Proportions are added because Hu moments ignore rotation, and in dance a tilted shape is a different shape.
+| Pair | Overlap | matchShapes (I2) | Score |
+|---|---|---|---|
+| frame-up attempt vs reference | 0.83 | 1.11 | 92 % |
+| high-arm attempt vs reference | 0.76 | 0.85 | 83 % |
+| hip-hand attempt vs reference | 0.76 | **8.05** | 84 % |
+| lean-sweep attempt vs reference | 0.71 | **6.93** | 75 % |
+| any two different poses (24 pairs) | 0.27 – 0.48 | 0.32 – 10.8 | ≤ 43 % |
+
+**Why overlap, not Hu moments:** the first sample set (a dip and one styling pose, 2026-11-22) separated fine with `matchShapes`. With four thin-limbed styling poses it failed: Hu moments 5–7 are close to zero and flip sign between near-identical poses (hip-hand: 8.05 for the *same* pose, while two *different* poses scored 0.32). Even the first four Hu moments could not separate the poses, because thin arms barely change them. Aligned overlap separates them with a clear gap (same ≥ 0.71, different ≤ 0.48).
+
+Score formula (same in Python and JS): `outline = clamp((overlap − 0.35) / (0.90 − 0.35)) × 100`, blended 60 % outline + 25 % proportions (aspect ratio) + 15 % openness (solidity).
 
 ## The one rule: delete every Mat
 Every `cv.Mat`, `cv.MatVector` and every Mat returned by `contours.get(i)` lives in WebAssembly memory and must be freed with `.delete()`. The app registers each one with a tracker and frees all of them in a `finally` block, then reports "Mats still in memory: 0".

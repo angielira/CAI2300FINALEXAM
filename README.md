@@ -1,20 +1,20 @@
 # Salsa Shape Matcher
 
-Practise your salsa shapes (the dip, the ending pose, shine styling) with computer vision that runs **entirely in your browser**.
+Practise your salsa shine styling poses (and any shape you hold, like a dip or an ending pose) with computer vision that runs **entirely in your browser**.
 Take or upload a photo against a plain wall. **OpenCV.js** finds your silhouette and compares it with a reference shape. **WebAssembly** makes it fast, inside a **Web Worker** so the page never freezes. **IndexedDB** keeps your reference shapes and practice history on your own computer.
 
 CAI 2300 · Computer Vision final exam · OpenCV.js + WebAssembly + IndexedDB, deployed on Netlify.
 
 ## Try it in 30 seconds
 1. Open the app and wait for the pill to say **Ready · OpenCV 4.x** (the first visit downloads ~10 MB).
-2. Click the sample **Dip · reference**, then **Save reference**.
-3. Click **Dip · attempt**: the shape is outlined, the reference appears as a dashed ghost, and you get a score (~93 %) and a coach tip.
+2. Pick one of the four styling poses (high arm, hand on hip, arms framing, lean & sweep). Click its **reference** sample, then **Save reference**. Do this for as many poses as you like.
+3. Choose a reference in step 2, then click that pose's **attempt**: the shape is outlined, the reference appears as a dashed ghost, and you get a score (high arm ≈ 83 %) and a coach tip. Try comparing an attempt to a *different* pose: it scores 40 % or less.
 4. Reload the page: the reference and the attempt are still in the **Library**. That's IndexedDB.
 
 ## How it works
 | | Technology | Job in this app |
 |---|---|---|
-| 👁 eyes | **OpenCV.js** | grayscale → blur → Otsu threshold → clean-up (morphology) → `findContours` → optional `grabCut` → measures (`boundingRect`, `convexHull`) → `matchShapes` (Hu moments) |
+| 👁 eyes | **OpenCV.js** | grayscale → blur → Otsu threshold → clean-up (morphology) → `findContours` → optional `grabCut` → measures (`boundingRect`, `convexHull`) → compare: aligned-silhouette overlap (`moments`, `drawContours`, `dilate`, `bitwise_and/or`, `countNonZero`), plus `matchShapes` (Hu moments) reported |
 | 💪 muscle | **WebAssembly** | OpenCV's C++ compiled to Wasm; loaded once in `shape.worker.js`; every `cv.Mat` is deleted ("Mats still in memory: 0") |
 | 🧠 memory | **IndexedDB** | database `salsashapes` v1: `references`, `attempts`, `settings` (photos stored as Blobs) |
 
@@ -42,7 +42,7 @@ node tests/browser/cdp.mjs "http://127.0.0.1:8765/tests/browser/db.test.html?pha
 python3 tests/browser/make_fixture.py
 node tests/browser/cdp.mjs http://127.0.0.1:8765/index.html --profile /tmp/p2 --wait '/error|ready/.test(document.getElementById("status").className)' --print "$(cat tests/browser/flow.test.js)"
 ```
-Last run (2026-11-22): pipeline PASS (same shape 93 % / 82 %, different 23–27 %) · IndexedDB 14/14 PASS across a browser restart · UI flow 9/9 PASS.
+Last run (2026-11-23): pipeline PASS (same pose 75–92 %, different poses 40 % or less) · UI states 6/6 PASS · IndexedDB 14/14 PASS across a browser restart · UI flow 9/9 PASS.
 
 ## The agent team
 Built by an orchestrated team of 12 Claude Code agents (`.claude/agents/`) with 11 shared skills (`.claude/skills/`) and a knowledge folder each (`knowledge/<agent>/docs` + `examples`).
@@ -62,7 +62,7 @@ Built by an orchestrated team of 12 Claude Code agents (`.claude/agents/`) with 
 | Quill | docs-writer | haiku | README, How it works, Resources |
 | Echo | meta-agent | sonnet | keeps agents, skills and knowledge in sync |
 
-**Who did what and where they handed work to each other:** [`docs/handoff-log.md`](docs/handoff-log.md) (25 hand-offs through Atlas). Highlights: Rosa rejected the first dip sample and the first score scale; Forge made Iris track every `contours.get(i)` Mat and cap photos at 800 px; Vera's screenshots caught hidden elements still showing.
+**Who did what and where they handed work to each other:** [`docs/handoff-log.md`](docs/handoff-log.md) (hand-offs 1–25 for the build, 26–41 for the review, 42–52 for the switch to four styling poses). Highlights: Rosa rejected the first dip sample and the first score scale; Forge made Iris track every `contours.get(i)` Mat and cap photos at 800 px; Vera's screenshots caught hidden elements still showing.
 
 Research: [`docs/`](docs/README.md) · Roster: [`docs/expert-roster.md`](docs/expert-roster.md) · Models and personalities: [`docs/agent-brains.md`](docs/agent-brains.md)
 

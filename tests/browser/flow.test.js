@@ -2,17 +2,17 @@
 // Replaces only the worker call with the Python-OpenCV fixture, then drives the real UI:
 // select a reference, open a sample, and check drawing, score, coach text and auto-save.
 (async () => {
-  const fx = await (await fetch('tests/browser/fixtures/dip.json')).json();
+  const fx = await (await fetch('tests/browser/fixtures/high-arm.json')).json();
   const out = [];
   const check = (name, ok) => out.push(`${ok ? 'PASS' : 'FAIL'} ${name}`);
   await DB.resetAll();
-  const refBlob = await (await fetch('samples/dip-reference.jpg')).blob();
-  await DB.saveReference({ id: 'ref-dip', name: 'Dip', createdAt: Date.now(), points: new Int32Array(fx.reference.points),
+  const refBlob = await (await fetch('samples/styling-high-arm-reference.jpg')).blob();
+  await DB.saveReference({ id: 'ref-high-arm', name: 'Styling · high arm', createdAt: Date.now(), points: new Int32Array(fx.reference.points),
     aspect: fx.reference.aspect, solidity: fx.reference.solidity, imageBlob: refBlob, thumbBlob: refBlob });
   const app = window.__salsa;
-  app.state.settings.refId = 'ref-dip';
+  app.state.settings.refId = 'ref-high-arm';
   await app.renderLibrary();
-  check('reference appears in the select', document.getElementById('ref-select').value === 'ref-dip');
+  check('reference appears in the select', document.getElementById('ref-select').value === 'ref-high-arm');
   let sentReference = null;
   app.vision.analyze = async (bitmap, options, reference) => {
     sentReference = reference;
@@ -23,7 +23,7 @@
     r.score.parts = { shape: r.score.parts.shape, proportions: 96, openness: 97 };
     return r;
   };
-  document.querySelector('.sample[data-src="samples/dip-attempt.jpg"]').click();
+  document.querySelector('.sample[data-src="samples/styling-high-arm-attempt.jpg"]').click();
   for (let i = 0; i < 80 && document.getElementById('score-row').hidden; i++) await new Promise((r) => setTimeout(r, 100));
   for (let i = 0; i < 80 && !document.querySelector('#tab-history .hrow'); i++) await new Promise((r) => setTimeout(r, 100));
   check('reference contour was sent to the worker', sentReference && sentReference.points.length === fx.reference.points.length);

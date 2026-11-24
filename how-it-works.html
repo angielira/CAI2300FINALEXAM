@@ -37,9 +37,10 @@
       <li><strong>Grayscale and blur</strong> (<code>cvtColor</code>, <code>GaussianBlur</code>) so colour and noise don’t matter.</li>
       <li><strong>Threshold</strong> (<code>threshold</code> with Otsu’s method) splits the picture into “dancer” and “wall”. Otsu picks the cut automatically; switch to Manual to choose it yourself.</li>
       <li><strong>Clean up</strong> (<code>morphologyEx</code>) closes small gaps and removes specks.</li>
-      <li><strong>Find the outline</strong> (<code>findContours</code>). The largest outline is you, or the two of you in a dip. Optional <code>grabCut</code> refines the edges on busy walls.</li>
+      <li><strong>Find the outline</strong> (<code>findContours</code>). The largest outline is you (or the two of you, if you photograph a partnered shape like a dip). Optional <code>grabCut</code> refines the edges on busy walls.</li>
       <li><strong>Measure</strong> (<code>boundingRect</code>, <code>convexHull</code>, <code>contourArea</code>): height ÷ width, and how “open” the shape is.</li>
-      <li><strong>Compare</strong> (<code>matchShapes</code>) with your reference. It uses Hu moments, seven numbers that describe a shape whatever its size or position. They become the match score, together with the proportions and openness.</li>
+      <li><strong>Compare</strong> with your reference. Both silhouettes are scaled to the same height and lined up on their centre of mass (<code>moments</code>), filled in (<code>drawContours</code>), given a little tolerance (<code>dilate</code>), and OpenCV measures how much they overlap (<code>bitwise_and</code>, <code>bitwise_or</code>, <code>countNonZero</code>). That overlap is the main part of your score, together with your proportions and how open the shape is. The dashed ghost on your photo is that same alignment.</li>
+      <li><strong>Hu moments too</strong> (<code>matchShapes</code>): seven numbers that describe a shape whatever its size or position. The app measures them, but doesn’t score with them: for thin arms and legs, near-identical poses can get very different Hu values, which is a nice lesson in picking the right tool.</li>
     </ol>
 
     <h2>Why it never freezes</h2>

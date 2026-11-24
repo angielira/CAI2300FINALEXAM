@@ -7,8 +7,8 @@ SKILLS = {
   "opencv-js-pipeline": ("Build, debug and calibrate the OpenCV.js silhouette pipeline (threshold, morphology, contours, GrabCut, matchShapes) for the Salsa Shape Matcher.",
     ["opencv-expert", "wasm-expert", "qa-tester", "salsa-coach"],
     """1. Read `docs/01-opencv-js-pipeline.md` and `js/pipeline.js`.
-2. Keep the step order: matFromImageData → cvtColor(RGBA2GRAY) → GaussianBlur 5×5 → threshold (Otsu or manual) → border-polarity check → morphologyEx CLOSE then OPEN → findContours(RETR_EXTERNAL) → largest contour → optional grabCut(GC_INIT_WITH_MASK) → approxPolyDP(0.001·arcLength) → boundingRect / convexHull / contourArea → matchShapes(CONTOURS_MATCH_I2).
-3. Any change to a parameter or the score formula must be made in **both** `js/pipeline.js` and `tests/pipeline_check.py`, then run `python3 tests/pipeline_check.py` (it must print `RESULT: PASS`: same-shape pairs ≥ 70 %, different shapes ≤ 55 %).
+2. Keep the step order: matFromImageData → cvtColor(RGBA2GRAY) → GaussianBlur 5×5 → threshold (Otsu or manual) → border-polarity check → morphologyEx CLOSE then OPEN → findContours(RETR_EXTERNAL) → largest contour → optional grabCut(GC_INIT_WITH_MASK) → approxPolyDP(0.001·arcLength) → boundingRect / convexHull / contourArea → compare: aligned-silhouette overlap (scored; moments centroid, filled drawContours, dilate 9, and/or + countNonZero) and matchShapes(CONTOURS_MATCH_I2) (reported only).
+3. Any change to a parameter or the score formula must be made in **both** `js/pipeline.js` and `tests/pipeline_check.py`, then run `python3 tests/pipeline_check.py` (it must print `RESULT: PASS`: same-pose pairs ≥ 70 %, different poses ≤ 55 %).
 4. Every new Mat/MatVector, including `contours.get(i)`, goes through `t.track()`; nothing is freed by hand outside `freeAll()`.
 5. Report measured numbers (distances and scores), not impressions."""),
   "wasm-memory-and-workers": ("Keep OpenCV.js (WebAssembly) memory-safe and off the main thread: Web Worker loading, transfers, timeouts, restarts and Mat leak checks.",
@@ -61,7 +61,7 @@ SKILLS = {
 4. Each hand-off is one row in `docs/handoff-log.md`: #, from → to, what, why, outcome."""),
   "salsa-shape-coaching": ("Salsa domain knowledge: which shapes to practise, photo guidance, and turning scores and measurements into kind, specific coach tips.",
     ["salsa-coach", "opencv-expert", "ux-designer-apple-hig"],
-    """1. Shapes: dip, ending pose, shine styling, cross-body finish, hammerlock.
+    """1. Built-in samples: four shine styling poses (high arm, hand on hip, arms framing, lean & sweep). Users may also save a dip, an ending pose, a cross-body finish or a hammerlock.
 2. Photo guidance: plain wall, contrasting clothes, whole body/couple in frame, same distance; use the self-timer.
 3. Score bands and tips are in `docs/06-salsa-shape-matching.md`; keep tips to one sentence, encouraging, concrete.
 4. Never claim the app judges timing, musicality or joints."""),
@@ -87,7 +87,7 @@ AGENTS = [
    ["Break the request into tasks with owners and dependencies.", "Launch independent experts at the same time; run peer reviews in parallel.",
     "Pass each expert's output to the next expert that needs it.", "Log every hand-off in docs/handoff-log.md.", "Finish with: which expert did what, and where they handed work to each other."], True),
   ("opencv-expert", "Iris", "opus", "Computer-vision maths (thresholds, contours, Hu moments, score calibration) is where subtle mistakes are costly.",
-   "Owns the OpenCV.js vision pipeline: silhouette extraction, contour measures, matchShapes scoring and its calibration.",
+   "Owns the OpenCV.js vision pipeline: silhouette extraction, contour measures, overlap scoring (plus matchShapes) and its calibration.",
    "Precise and visual. Won't accept an untested pipeline: every claim comes with a measured number from the sample photos.",
    "Read, Write, Edit, Glob, Grep, Bash, WebFetch",
    ["Write and maintain js/pipeline.js and its Python twin tests/pipeline_check.py.", "Calibrate the score on the sample photos.",

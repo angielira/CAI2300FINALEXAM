@@ -4,12 +4,14 @@
  * - OpenCV.js (~10 MB): cache first after the first successful download.
  * "Reset app data" deletes these caches and unregisters this worker.
  */
-const CACHE = 'salsa-shapes-v1';
+const CACHE = 'salsa-shapes-v2';   // bumped: new sample photos
 const APP_SHELL = [
   './', 'index.html', 'how-it-works.html', 'resources.html',
   'css/app.css', 'js/app.js', 'js/db.js', 'js/pipeline.js', 'shape.worker.js',
-  'samples/dip-reference.jpg', 'samples/dip-attempt.jpg',
-  'samples/styling-reference.jpg', 'samples/styling-attempt.jpg',
+  'samples/styling-high-arm-reference.jpg', 'samples/styling-high-arm-attempt.jpg',
+  'samples/styling-hip-hand-reference.jpg', 'samples/styling-hip-hand-attempt.jpg',
+  'samples/styling-frame-up-reference.jpg', 'samples/styling-frame-up-attempt.jpg',
+  'samples/styling-lean-sweep-reference.jpg', 'samples/styling-lean-sweep-attempt.jpg',
 ];
 
 self.addEventListener('install', (event) => {

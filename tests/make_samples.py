@@ -72,32 +72,38 @@ def render(draw, seed, name):
 
 
 # --- Shapes -------------------------------------------------------------
-def styling(jitter=0.0, s=1.0, x=430, y=650):
-    # Solo shine styling: right arm high, left arm out, left leg pointed.
-    def d(m):
-        body(m, (x, y), -90 + 4 * jitter, s,
-             arms=[(-60 - 6 * jitter, -80 - 8 * jitter), (165 + 5 * jitter, 175)],
-             legs=[(95, 92), (120 + 6 * jitter, 135 + 6 * jitter)], color=255, skirt=True)
-    return d
+# Salsa shine styling poses. Each pose is (torso angle, arms, legs); `jitter` nudges the
+# angles so the "attempt" photo is the same pose done a little differently.
+POSES = {
+    # right arm high, left arm out to the side, left foot pointed
+    "high-arm":   dict(torso=-90, arms=[(-60, -80), (165, 175)], legs=[(95, 92), (120, 135)]),
+    # left hand on the hip (elbow out), right arm presenting low and long, feet crossed
+    "hip-hand":   dict(torso=-90, arms=[(150, 35), (25, 15)], legs=[(100, 78), (78, 102)]),
+    # both arms framing the head, wide stance
+    "frame-up":   dict(torso=-90, arms=[(-120, -55), (-60, -125)], legs=[(62, 78), (118, 102)]),
+    # body leaning to one side, low arm sweep, back arm lifted
+    "lean-sweep": dict(torso=-68, arms=[(165, 165), (-25, -5)], legs=[(102, 96), (128, 145)]),
+}
+NAMES = {"high-arm": "Styling · high arm", "hip-hand": "Styling · hand on hip",
+         "frame-up": "Styling · arms framing", "lean-sweep": "Styling · lean & sweep"}
 
 
-def dip(jitter=0.0, s=0.9, x=600, y=600):
-    # Couple dip: leader leans over, follower arches back with her head low.
+def styling(pose, jitter=0.0, s=1.0, x=430, y=650):
+    p = POSES[pose]
+    j = lambda a, k: a + k * jitter
     def d(m):
-        body(m, (x, y), -112 + 3 * jitter, s,                          # leader
-             arms=[(160, 150 + 5 * jitter), (175, 200)],
-             legs=[(75, 90), (118, 100)], color=255)
-        fx, fy = x - 70 * s, y + 70 * s                                # follower hip
-        body(m, (fx, fy), 170 + 6 * jitter, s,                         # torso arches left/down
-             arms=[(-35, -20 + 6 * jitter), (140 + 8 * jitter, 120)],
-             legs=[(70 + 4 * jitter, 85), (100, 95)], color=255, skirt=True)
+        body(m, (x, y), j(p["torso"], 4), s,
+             arms=[(j(a, -6), j(b, -8)) for a, b in p["arms"]],
+             legs=[(j(a, 3), j(b, 5)) for a, b in p["legs"]], color=255, skirt=True)
     return d
 
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    render(styling(0.0), 1, "styling-reference.jpg")
-    render(styling(1.0, s=0.85, x=470, y=690), 2, "styling-attempt.jpg")
-    render(dip(0.0), 3, "dip-reference.jpg")
-    render(dip(1.0, s=0.8, x=520, y=640), 4, "dip-attempt.jpg")
+    for old in os.listdir(OUT):
+        if old.endswith(".jpg"):
+            os.remove(os.path.join(OUT, old))
+    for i, pose in enumerate(POSES):
+        render(styling(pose), 10 + i, f"styling-{pose}-reference.jpg")
+        render(styling(pose, 1.0, s=0.86, x=470, y=680), 20 + i, f"styling-{pose}-attempt.jpg")
     print("wrote", sorted(os.listdir(OUT)))

@@ -142,6 +142,16 @@
     }
     return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
   }
+  /** Area centroid x of a closed polygon (same as OpenCV moments m10/m00). */
+  function centroidX(points) {
+    let a = 0, cx = 0;
+    for (let i = 0; i < points.length; i += 2) {
+      const j = (i + 2) % points.length;
+      const cross = points[i] * points[j + 1] - points[j] * points[i + 1];
+      a += cross; cx += (points[i] + points[j]) * cross;
+    }
+    return a ? cx / (3 * a) : bbox(points).x + bbox(points).w / 2;
+  }
   function selectedRef() { return state.refs.find((r) => r.id === state.settings.refId) || null; }
 
   // ---------------------------------------------------------------- coach (Rosa)
@@ -168,11 +178,12 @@
     const ctx = canvas.getContext('2d');
     ctx.putImageData(new ImageData(result.pixels, result.width, result.height), 0, 0);
 
-    // Ghost: the reference outline, scaled into your silhouette's box (drawn by the page, not OpenCV).
+    // Ghost: the reference outline, scaled to your height and aligned on your centroid,
+    // exactly the alignment the overlap score uses (drawn by the page, not OpenCV).
     if (ref && state.settings.ghost && ref.points && ref.points.length > 4) {
       const mine = bbox(result.points), theirs = bbox(ref.points);
       const s = mine.h / theirs.h;
-      const ox = mine.x + mine.w / 2 - (theirs.x + theirs.w / 2) * s;
+      const ox = centroidX(result.points) - centroidX(ref.points) * s;
       const oy = mine.y - theirs.y * s;
       ctx.save();
       ctx.setLineDash([8, 6]);
@@ -213,7 +224,7 @@
     $('score').textContent = score.total;
     $('score-title').textContent = `Match with “${ref.name}”`;
     $('coach').textContent = coachText(score.total, score.parts, metrics, ref)
-      + ` (outline ${score.parts.shape}%, proportions ${score.parts.proportions}%, openness ${score.parts.openness}%)`;
+      + ` (overlap ${score.parts.shape}%, proportions ${score.parts.proportions}%, openness ${score.parts.openness}%)`;
     row.hidden = false;
   }
 
@@ -451,7 +462,7 @@
       $('viewer-title').textContent = `${a.refName} · ${a.score}%`;
       $('viewer-orig').src = objectUrl(a.originalBlob);
       $('viewer-res').src = objectUrl(a.resultBlob);
-      $('viewer-meta').textContent = `${fmtDate(a.createdAt)} · outline ${a.parts.shape}%, proportions ${a.parts.proportions}%, openness ${a.parts.openness}% · ${a.ms} ms`;
+      $('viewer-meta').textContent = `${fmtDate(a.createdAt)} · overlap ${a.parts.shape}%, proportions ${a.parts.proportions}%, openness ${a.parts.openness}% · ${a.ms} ms`;
       $('viewer').showModal();
     }
   });

@@ -1,6 +1,6 @@
-"""Build a test fixture: what the worker would return for dip-attempt vs dip-reference.
+"""Build a test fixture: what the worker would return for high-arm attempt vs high-arm reference.
 Uses tests/pipeline_check.py (Python OpenCV, same steps as js/pipeline.js), then draws the
-same overlay. Output: tests/browser/fixtures/dip.json (git-ignored, regenerate any time)."""
+same overlay. Output: tests/browser/fixtures/high-arm.json (git-ignored, regenerate any time)."""
 import base64, json, math, os, sys
 import cv2, numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -14,9 +14,9 @@ def run(name):
     sil = P.silhouette(bgr)
     return bgr, sil
 
-ref_img, ref = run("dip-reference.jpg")
-img, att = run("dip-attempt.jpg")
-total, d = P.score(att, ref)
+ref_img, ref = run("styling-high-arm-reference.jpg")
+img, att = run("styling-high-arm-attempt.jpg")
+total, d, o = P.score(att, ref)
 mask = np.zeros(img.shape[:2], np.uint8); cv2.drawContours(mask, [att["contour"]], 0, 255, -1)
 rgba = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA).astype(np.float32)
 tint = np.array([255, 70, 85, 255], np.float32)
@@ -26,7 +26,7 @@ hull = cv2.convexHull(att["contour"])
 cv2.drawContours(rgba, [hull], 0, (255, 196, 0, 255), 2, cv2.LINE_AA)
 cv2.drawContours(rgba, [att["contour"]], 0, (255, 70, 85, 255), 3, cv2.LINE_AA)
 x, y, bw, bh = cv2.boundingRect(att["contour"])
-shape = 100 / (1 + (d / 1.5) ** 3)
+shape = min(100.0, max(0.0, (o - 0.35) / (0.90 - 0.35) * 100))
 fixture = {
   "reference": {"points": ref["contour"].reshape(-1).tolist(), "aspect": ref["aspect"], "solidity": ref["solidity"]},
   "result": {"ok": True, "width": int(rgba.shape[1]), "height": int(rgba.shape[0]),
@@ -34,8 +34,8 @@ fixture = {
     "metrics": {"area": int(att["area"]), "width": bw, "height": bh, "aspect": att["aspect"], "solidity": att["solidity"],
                 "extent": att["area"] / (bw * bh), "frameCoverage": bw * bh / (img.shape[0] * img.shape[1]),
                 "thresholdUsed": 141, "points": len(att["contour"])},
-    "score": {"distance": d, "total": total, "parts": {"shape": round(shape), "proportions": 0, "openness": 0}},
+    "score": {"distance": d, "overlap": o, "total": total, "parts": {"shape": round(shape), "proportions": 0, "openness": 0}},
     "ms": 0, "matsAlive": 0}}
 os.makedirs(os.path.join(HERE, "fixtures"), exist_ok=True)
-json.dump(fixture, open(os.path.join(HERE, "fixtures", "dip.json"), "w"))
-print("fixture score", total, "distance", round(d, 3))
+json.dump(fixture, open(os.path.join(HERE, "fixtures", "high-arm.json"), "w"))
+print("fixture score", total, "overlap", round(o, 2), "distance", round(d, 3))

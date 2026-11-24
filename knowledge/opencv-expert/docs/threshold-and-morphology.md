@@ -6,4 +6,4 @@ Sources: https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html · Ope
 - `cv.adaptiveThreshold` computes a threshold per neighbourhood: excellent for text on uneven paper, bad for a large uniform dark body (it hollows it out). Not used here.
 - Blur first (`cv.GaussianBlur(src, dst, new cv.Size(5,5), 0, 0, cv.BORDER_DEFAULT)`) to reduce noise.
 - `cv.morphologyEx(src, dst, cv.MORPH_CLOSE, kernel, new cv.Point(-1,-1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue())` fills small holes/gaps; `MORPH_OPEN` removes specks. Kernel: `cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(k,k))` (delete it).
-- Measured (dip-reference.jpg): Otsu area 50 934 px; manual 120 → 50 662; manual 160 → 95 146 (the floor joins the shape: too high). That is why the slider exists.
+- Measured (styling-high-arm-reference.jpg): Otsu area 33 128 px; manual 120 → 33 052; manual 160 → 73 343 (the floor joins the shape: too high); 200 → 234 081 (the wall too). That is why the slider exists. 

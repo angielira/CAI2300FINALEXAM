@@ -8,7 +8,7 @@
   const hasTry = () => !$('banner').hidden && [...$('banner').querySelectorAll('button')].some((b) => b.textContent === 'Try again');
   check('OpenCV load failure shows red pill', $('status').className.includes('pill-error'));
   check('OpenCV error banner has Try again', hasTry());
-  document.querySelector('.sample[data-src="samples/dip-attempt.jpg"]').click();
+  document.querySelector('.sample[data-src="samples/styling-high-arm-attempt.jpg"]').click();
   for (let i = 0; i < 50 && !window.__salsa.state.busy; i++) await sleep(20);
   for (let i = 0; i < 100 && window.__salsa.state.busy; i++) await sleep(50);
   check('analyze while OpenCV failed keeps the Try again banner', hasTry());

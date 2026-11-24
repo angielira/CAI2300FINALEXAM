@@ -1,11 +1,11 @@
 # 06 · The use case: matching salsa shapes
 
-**Idea:** salsa is movement, but it has shapes you hold and can practise: the **dip**, the **ending pose** when the song finishes, **styling poses** in shines (solo footwork) and the **cross-body lead finish**. A dancer saves a reference photo of a shape (from a teacher, or their own best attempt) and then practises towards it. Each attempt gets a score, a coach tip and a place in their history.
+**Idea:** salsa is movement, but it has shapes you hold and can practise. The built-in samples are four **shine styling** poses (high arm, hand on hip, arms framing, lean & sweep); users can also save their own shapes, such as the **dip**, the **ending pose** when the song finishes, **styling poses** in shines (solo footwork) and the **cross-body lead finish**. A dancer saves a reference photo of a shape (from a teacher, or their own best attempt) and then practises towards it. Each attempt gets a score, a coach tip and a place in their history.
 
 ## Why silhouettes fit
 - A held shape is mostly about **line**: how low the dip goes, how long the follower's arch is, where the styling arm points. A silhouette outline captures line well.
 - A couple in contact merges into **one** silhouette; for a dip that is a feature, since the shape of the two together is what you are judging.
-- Hu moments make the comparison independent of where you stand and how far the camera is; aspect ratio and solidity add back what matters to dancers (tilt and how open the shape is).
+- Scaling both silhouettes to the same height and aligning them makes the comparison independent of where you stand and how far the camera is; the overlap stays sensitive to where the arms and legs point, which is what styling is about. Aspect ratio and solidity add how tall/wide and how open the shape is.
 
 ## Photo guidance shown to users
 - Plain light wall + dark clothes (or the reverse). Whole body or couple in frame. Camera at chest height, same distance each time.

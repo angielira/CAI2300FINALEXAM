@@ -88,3 +88,22 @@
 | 41 | Atlas → User | Summary, commit, push to main | done | see the commit for this section |
 
 Not fixed (low, logged): `sw.js:37` caches an opaque opencv.js response even if it was an error (Reset clears it, and the worker falls back to the 4.x URL); the min-area order differs between JS and Python (row 28); the copy for a blocked delete (row 30).
+
+## Change 2026-11-23: four styling references instead of the dip
+
+**Request (user):** remove the dip reference and add multiple styling references.
+**How it ran (plain statement):** done in the main Claude session following each expert's role and knowledge folder, not as separate agents.
+
+| # | From → To | What | Why | Outcome |
+|---|---|---|---|---|
+| 42 | User → Atlas | Remove the dip sample, add several styling references | user request | dip reference **and** its attempt removed (an attempt without its reference can't be scored) |
+| 43 | Atlas → Rosa | Choose styling poses | domain | four shine poses: high arm, hand on hip, arms framing, lean & sweep (reference + attempt each) |
+| 44 | Rosa → Atlas → Iris | Generate the 8 sample photos | samples | `tests/make_samples.py` |
+| 45 | Iris → Atlas | `matchShapes` fails on the new set: same hand-on-hip pose 8.05, two different poses 0.32; RESULT: FAIL | measured | Hu moments 5–7 flip sign on thin limbs; first four Hu moments also not separable |
+| 46 | Atlas → Iris | Find a measure that separates poses | review rejection | aligned-silhouette overlap (height + centroid aligned, filled, dilated 9 px, IoU): same 0.71–0.83, different 0.27–0.48 |
+| 47 | Rosa → Atlas → Iris | "A 100 % for a pose that isn't identical feels wrong" | calibration | full marks at overlap 0.90 → same 75–92 %, different ≤ 43 %; PASS |
+| 48 | Iris → Atlas → Forge | Same change in `js/pipeline.js` | Python/JS parity rule | every new Mat tracked (scaled contour, MatVector, mask, hierarchy, kernel, dilated, and/or); `node --check` OK |
+| 49 | Iris → Atlas → Juno | Ghost outline must use the same alignment as the score | consistency | ghost aligned on the polygon centroid; JS centroid = OpenCV m10/m00 (3.2222 on a test L-shape) |
+| 50 | Atlas → Juno + Harbor | 8 sample buttons, datalist names; service-worker cache list (cache bumped to v2) | UI + offline | `index.html`, `sw.js` |
+| 51 | Atlas → Vera | Re-run everything | acceptance gate | pipeline PASS; db 9/9, 3/3, 2/2; flow 9/9 (score 83); states 6/6; screenshot checked |
+| 52 | Atlas → Quill + Echo | README, How it works, docs/01, docs/06, knowledge notes, roster/skills regenerated | docs | done |

@@ -6,7 +6,7 @@ Decision: everything runs in the browser and is deployed on Netlify as a static 
 | Persona | Agent | One-line job |
 |---|---|---|
 | Atlas | `orchestrator` (required) | Runs the team: plans, delegates to experts in parallel, passes results between them, demands peer review, accepts or rejects work, keeps the hand-off log. |
-| Iris | `opencv-expert` (required) | Owns the OpenCV.js vision pipeline: silhouette extraction, contour measures, matchShapes scoring and its calibration. |
+| Iris | `opencv-expert` (required) | Owns the OpenCV.js vision pipeline: silhouette extraction, contour measures, overlap scoring (plus matchShapes) and its calibration. |
 | Forge | `wasm-expert` (required) | Owns WebAssembly and the Web Worker: loads opencv.js once, keeps the page responsive, guarantees every cv.Mat is deleted, restarts stuck workers. |
 | Ledger | `indexeddb-expert` (required) | Owns IndexedDB: versioned schema, references/attempts/settings stores, Blobs, quota handling, blocked upgrades and Reset app data. |
 | Wren | `ux-designer-apple-hig` | Designs the flow and every state (loading OpenCV, working, done, error, blocked library, empty library) following Apple's Human Interface Guidelines. |
