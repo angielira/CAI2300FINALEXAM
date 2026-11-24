@@ -64,7 +64,7 @@
 @agent-orchestrator Review the Salsa Shape Matcher that is on main. Run the experts in parallel: Iris and Forge review js/pipeline.js and shape.worker.js against their knowledge folders (every cv.Mat deleted, OpenCV.js loads once in the worker); Ledger reviews js/db.js; Vera runs python3 tests/pipeline_check.py and the browser tests in CLAUDE.md, then opens the app in Chrome and checks the OpenCV.js status pill reaches Ready and a sample scores. Fix anything that fails, append your hand-offs to docs/handoff-log.md, push to main, and tell me which expert did what.
 ```
 
-## Review session 2026-11-23 (separate expert agents)
+## Review session 2026-11-23 (orchestrator review, experts as roles)
 
 **How the experts ran (plain statement):** none of the experts ran as a separate agent in this session. Atlas was launched as a subagent with only Read, Write, Edit and Bash, and no tool to start other agents. So Atlas did each expert's review in turn, against that expert's knowledge folder (`knowledge/<agent>/docs` + `examples`), and had a *different* expert's lens re-check each fix, backed by an executed test. Rows 26–40 are role hand-offs within one agent, not separate model runs. To get truly independent reviews, start a new Claude Code session and invoke the experts directly. Also unverified: the real opencv.js in the worker. docs.opencv.org is blocked here and third-party copies were not used, so the cv calls were checked by reading against the knowledge folders, with Python OpenCV (cv2) checking the algorithm and the constants.
 
