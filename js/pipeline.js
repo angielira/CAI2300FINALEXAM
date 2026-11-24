@@ -88,8 +88,9 @@ function grabCutRefine(src, bin, rect, t) {
   const fgd = t.track(new cv.Mat());
   cv.grabCut(rgb, mask, rect, bgd, fgd, 2, constant('GC_INIT_WITH_MASK', 1));
   const out = t.track(new cv.Mat(bin.rows, bin.cols, cv.CV_8UC1));
-  const o = out.data;
-  for (let i = 0; i < m.length; i++) o[i] = (m[i] === 1 || m[i] === 3) ? 255 : 0;
+  // Re-read both views: grabCut and the new Mat may grow Wasm memory, which detaches `m`.
+  const gm = mask.data, o = out.data;
+  for (let i = 0; i < gm.length; i++) o[i] = (gm[i] === 1 || gm[i] === 3) ? 255 : 0;
   return out;
 }
 

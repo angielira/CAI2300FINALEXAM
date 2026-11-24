@@ -17,8 +17,9 @@
     $('status-text').textContent = text;
   }
 
-  function showBanner(html, actions = []) {
+  function showBanner(html, actions = [], kind = '') {
     const b = $('banner');
+    b.dataset.kind = kind;
     b.innerHTML = html;
     for (const [label, fn] of actions) {
       const btn = document.createElement('button');
@@ -51,7 +52,7 @@
 
     fail(message) {
       setStatus('error', 'OpenCV error');
-      showBanner(`<strong>Could not start OpenCV.js.</strong> ${escapeHtml(message)}`, [['Try again', () => { hideBanner(); this.restart(); }]]);
+      showBanner(`<strong>Could not start OpenCV.js.</strong> ${escapeHtml(message)}`, [['Try again', () => { hideBanner(); this.restart(); }]], 'opencv');
       for (const p of this.pending.values()) { clearTimeout(p.timer); p.reject(new Error(message)); }
       this.pending.clear();
       updateBusy();
@@ -97,7 +98,8 @@
       });
     }
   }
-  function hideBannerIf() { if (cvReady) hideBanner(); }
+  // Hide only a banner of this kind (an OpenCV error), never e.g. the library-blocked banner.
+  function hideBannerIf(kind) { if ($('banner').dataset.kind === kind) hideBanner(); }
 
   // ---------------------------------------------------------------- state
   const state = {
@@ -252,7 +254,8 @@
       setStatus('ready', `Done in ${Math.round(result.ms)} ms`);
       if (ref && result.score && state.settings.autosave) await saveAttempt(result, ref);
     } catch (err) {
-      showBanner(`<strong>That didn’t work.</strong> ${escapeHtml(err.message)}`);
+      // If the worker failed, keep its banner (it has the "Try again" button).
+      if (!statusEl.classList.contains('pill-error')) showBanner(`<strong>That didn’t work.</strong> ${escapeHtml(err.message)}`);
       if (cvReady) setStatus('ready', 'Ready');
     } finally {
       state.busy = false; updateBusy();
@@ -487,6 +490,7 @@
   // Reset app data: delete the database, caches and service worker, then reload.
   $('btn-reset').addEventListener('click', async () => {
     if (!confirm('Delete all reference shapes, practice history and settings from this browser?')) return;
+    clearTimeout(saveTimer);             // a pending settings save would recreate the database
     try {
       await DB.resetAll();
       if (self.caches) for (const k of await caches.keys()) await caches.delete(k);

@@ -87,6 +87,7 @@ self.onmessage = async (event) => {
   if (msg.type !== 'analyze') return;
   await loading;
   if (!ready) {
+    if (msg.bitmap && msg.bitmap.close) msg.bitmap.close();   // nobody else will free it
     post({ type: 'error', id: msg.id, message: 'OpenCV.js is not loaded.' });
     return;
   }
@@ -99,6 +100,11 @@ self.onmessage = async (event) => {
     const transfer = result.ok ? [result.pixels.buffer, result.points.buffer] : [];
     post({ type: 'result', id: msg.id, result }, transfer);
   } catch (err) {
-    post({ type: 'error', id: msg.id, message: (err && err.message) || String(err) });
+    // OpenCV.js throws C++ exceptions as a bare number (a pointer); turn it into text.
+    let message = (err && err.message) || String(err);
+    if (typeof err === 'number' && self.cv && typeof self.cv.exceptionFromPtr === 'function') {
+      try { message = 'OpenCV: ' + self.cv.exceptionFromPtr(err).msg; } catch (e) { /* keep the number */ }
+    }
+    post({ type: 'error', id: msg.id, message });
   }
 };

@@ -49,6 +49,9 @@ function openDB() {
       const db = req.result;
       // A newer version opened in another tab: close so it can upgrade.
       db.onversionchange = () => { db.close(); dbPromise = null; emit('versionchange'); };
+      // The browser closed it (DevTools "Clear site data", storage eviction): reopen next time.
+      const mine = dbPromise;                       // set by now: onsuccess always runs later
+      db.onclose = () => { if (dbPromise === mine) dbPromise = null; };
       resolve(db);
     };
     req.onerror = () => { dbPromise = null; reject(req.error); };
